@@ -32,19 +32,5 @@ namespace AccountBook.Common
 
             return bitmap;
         }
-
-        /// <summary>
-        /// 将带逗号的金额转换为数字
-        /// </summary>
-        /// <param name="StrMoney">带逗号的金额</param>
-        /// <returns>不带逗号的金额</returns>
-        public static decimal ConvertMoney(string StrMoney)
-        {
-            StringBuilder sb = new StringBuilder();
-            StrMoney.Split(',').ToList()
-                .ForEach(x => sb.Append(x));
-
-           return Convert.ToDecimal(sb.ToString()) ;
-        }
     }
 }

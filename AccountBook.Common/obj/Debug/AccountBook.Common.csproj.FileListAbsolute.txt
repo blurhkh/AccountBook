@@ -1,6 +1,0 @@
-E:\软件开发\账簿系统\AccountBook\AccountBook.Common\bin\Debug\AccountBook.Common.dll.config
-E:\软件开发\账簿系统\AccountBook\AccountBook.Common\bin\Debug\AccountBook.Common.dll
-E:\软件开发\账簿系统\AccountBook\AccountBook.Common\bin\Debug\AccountBook.Common.pdb
-E:\软件开发\账簿系统\AccountBook\AccountBook.Common\obj\Debug\AccountBook.Common.dll
-E:\软件开发\账簿系统\AccountBook\AccountBook.Common\obj\Debug\AccountBook.Common.pdb
-E:\软件开发\账簿系统\AccountBook\AccountBook.Common\obj\Debug\AccountBook.Common.csprojResolveAssemblyReference.cache

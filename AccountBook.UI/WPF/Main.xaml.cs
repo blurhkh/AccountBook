@@ -211,7 +211,7 @@ namespace AccountBook.WPF
         {
             if (string.IsNullOrEmpty(this.txtMoney.Text.Trim())) return;
 
-            txtMoney.Text = AccountBookCommon.ConvertMoney(txtMoney.Text.Trim()).ToString("0.00");
+            txtMoney.Text = Convert.ToDecimal(txtMoney.Text.Trim()).ToString("0.00");
         }
 
         /// <summary>
@@ -226,7 +226,7 @@ namespace AccountBook.WPF
             }
             // 得到分类号
             string sortCd = cmbSort.SelectedValue.ToString();
-            decimal money = AccountBookCommon.ConvertMoney(txtMoney.Text);
+            decimal money = Convert.ToDecimal(txtMoney.Text);
             if (service.AddAccount(sortCd, money, txtComments.Text))
             {
                 this.GetTodayTotal();
@@ -255,7 +255,7 @@ namespace AccountBook.WPF
         public void MakeBackup()
         {
             string path = appPath + @"AppData\AccountBook";
-            File.Copy(path + ".db", path + ".bk", true);
+            File.Copy($"{path}.db", $"{path}.bk", true);
         }
 
         /// <summary>
