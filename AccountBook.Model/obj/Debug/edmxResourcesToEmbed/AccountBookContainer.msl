@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="AccountBookModelStoreContainer" CdmEntityContainer="AccountBookDbContext">
+    <EntitySetMapping Name="Account">
+      <EntityTypeMapping TypeName="AccountBook.Model.Account">
+        <MappingFragment StoreEntitySet="Account">
+          <ScalarProperty Name="AccountDate" ColumnName="AccountDate" />
+          <ScalarProperty Name="Income" ColumnName="Income" />
+          <ScalarProperty Name="Expenditure" ColumnName="Expenditure" />
+          <ScalarProperty Name="SortCd" ColumnName="SortCd" />
+          <ScalarProperty Name="Comments" ColumnName="Comments" />
+          <ScalarProperty Name="UpdateDate" ColumnName="UpdateDate" />
+          <ScalarProperty Name="DeleteDate" ColumnName="DeleteDate" />
+          <ScalarProperty Name="DeleteFlg" ColumnName="DeleteFlg" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Sort">
+      <EntityTypeMapping TypeName="AccountBook.Model.Sort">
+        <MappingFragment StoreEntitySet="Sort">
+          <ScalarProperty Name="SortCd" ColumnName="SortCd" />
+          <ScalarProperty Name="SortName" ColumnName="SortName" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="User">
+      <EntityTypeMapping TypeName="AccountBook.Model.User">
+        <MappingFragment StoreEntitySet="User">
+          <ScalarProperty Name="UserId" ColumnName="UserId" />
+          <ScalarProperty Name="UserName" ColumnName="UserName" />
+          <ScalarProperty Name="Password" ColumnName="Password" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+  </EntityContainerMapping>
+</Mapping>

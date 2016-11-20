@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="AccountBook.Model.Store" Provider="System.Data.SQLite.EF6" ProviderManifestToken="data source=E:\软件开发\账簿系统\AccountBook\AccountBook.UI\bin\Debug\AppData\AccountBook.db" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+  <EntityType Name="Account">
+    <Key>
+      <PropertyRef Name="AccountDate" />
+    </Key>
+    <Property Name="AccountDate" Type="datetime" Nullable="false" />
+    <Property Name="Income" Type="decimal" Precision="53" Scale="0" />
+    <Property Name="Expenditure" Type="decimal" Precision="53" Scale="0" />
+    <Property Name="SortCd" Type="varchar" MaxLength="20" />
+    <Property Name="Comments" Type="varchar" MaxLength="100" />
+    <Property Name="UpdateDate" Type="datetime" />
+    <Property Name="DeleteDate" Type="datetime" />
+    <Property Name="DeleteFlg" Type="char" MaxLength="2147483647" />
+  </EntityType>
+  <EntityType Name="Sort">
+    <Key>
+      <PropertyRef Name="SortCd" />
+    </Key>
+    <Property Name="SortCd" Type="varchar" MaxLength="10" Nullable="false" />
+    <Property Name="SortName" Type="varchar" MaxLength="20" />
+  </EntityType>
+  <EntityType Name="User">
+    <Key>
+      <PropertyRef Name="UserId" />
+    </Key>
+    <Property Name="UserId" Type="varchar" MaxLength="20" Nullable="false" />
+    <Property Name="UserName" Type="varchar" MaxLength="30" />
+    <Property Name="Password" Type="varchar" MaxLength="20" />
+  </EntityType>
+  <EntityContainer Name="AccountBookModelStoreContainer">
+    <EntitySet Name="Account" EntityType="Self.Account" store:Type="Tables" />
+    <EntitySet Name="Sort" EntityType="Self.Sort" store:Type="Tables" />
+    <EntitySet Name="User" EntityType="Self.User" store:Type="Tables" />
+  </EntityContainer>
+</Schema>

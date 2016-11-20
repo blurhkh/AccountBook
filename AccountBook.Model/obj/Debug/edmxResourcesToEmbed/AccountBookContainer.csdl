@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="AccountBook.Model" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+  <EntityType Name="Account">
+    <Key>
+      <PropertyRef Name="AccountDate" />
+    </Key>
+    <Property Name="AccountDate" Type="DateTime" Nullable="false" />
+    <Property Name="Income" Type="Decimal" Precision="53" Scale="0" />
+    <Property Name="Expenditure" Type="Decimal" Precision="53" Scale="0" />
+    <Property Name="SortCd" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+    <Property Name="Comments" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+    <Property Name="UpdateDate" Type="DateTime" />
+    <Property Name="DeleteDate" Type="DateTime" />
+    <Property Name="DeleteFlg" Type="String" MaxLength="2147483647" FixedLength="true" Unicode="false" />
+  </EntityType>
+  <EntityType Name="Sort">
+    <Key>
+      <PropertyRef Name="SortCd" />
+    </Key>
+    <Property Name="SortCd" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="SortName" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+  </EntityType>
+  <EntityType Name="User">
+    <Key>
+      <PropertyRef Name="UserId" />
+    </Key>
+    <Property Name="UserId" Type="String" MaxLength="20" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="UserName" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+    <Property Name="Password" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+  </EntityType>
+  <EntityContainer Name="AccountBookDbContext" annotation:LazyLoadingEnabled="true">
+    <EntitySet Name="Account" EntityType="Self.Account" />
+    <EntitySet Name="Sort" EntityType="Self.Sort" />
+    <EntitySet Name="User" EntityType="Self.User" />
+  </EntityContainer>
+</Schema>

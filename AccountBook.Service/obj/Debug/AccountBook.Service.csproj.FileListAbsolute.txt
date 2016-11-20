@@ -1,0 +1,15 @@
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\AccountBook.Service.dll.config
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\AccountBook.Service.dll
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\AccountBook.Service.pdb
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\AccountBook.DAL.dll
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\AccountBook.Model.dll
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\EntityFramework.dll
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\AccountBook.DAL.pdb
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\AccountBook.Model.pdb
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\EntityFramework.xml
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\zh-Hans\EntityFramework.resources.dll
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\obj\Debug\AccountBook.Service.csprojResolveAssemblyReference.cache
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\obj\Debug\AccountBook.Service.dll
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\obj\Debug\AccountBook.Service.pdb
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\AccountBook.Common.dll
+E:\软件开发\账簿系统\AccountBook\AccountBook.Service\bin\Debug\AccountBook.Common.pdb
