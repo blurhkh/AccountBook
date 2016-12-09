@@ -4,6 +4,7 @@ using System.Linq;
 using System.Data.Entity;
 using AccountBook.Model;
 using AccountBook.Common;
+using System.Text;
 
 namespace AccountBook.DAL
 {
@@ -126,6 +127,9 @@ namespace AccountBook.DAL
             return dbContext.SaveChanges() > 0;
         }
 
+        /// <summary>
+        /// 编辑账目记录
+        /// </summary>
         public bool EditAccount(Account account)
         {
             dbContext.Database.BeginTransaction();
@@ -135,27 +139,157 @@ namespace AccountBook.DAL
         }
 
         /// <summary>
-        /// 获取今日收入合计
+        /// 获取指定日收入或支出合计
         /// </summary>
-        public decimal GetTodayTotalIncome()
+        /// <param name="date">指定日期</param>
+        /// <returns>指定日收入或支出合计</returns>
+        public decimal GetDayTotalInOrEx(DateTime date, bool option)
         {
             decimal? totalIncome = dbContext.Set<Account>().
-                Where(x => x.AccountDate != null
-                && x.AccountDate.Year == DateTime.Now.Year
-                && x.AccountDate.Day == DateTime.Now.Day).Sum(x => x.Income).GetValueOrDefault();
+                Where(x => x.DeleteFlg == CommConst.NotDeleted
+                && x.AccountDate.Year == date.Year
+                && x.AccountDate.Month == date.Month
+                && x.AccountDate.Day == date.Day).Sum(x => option ? x.Income : x.Expenditure).GetValueOrDefault();
             return totalIncome == null ? decimal.Zero : (decimal)totalIncome;
         }
 
         /// <summary>
-        /// 获取今日支出合计
+        /// 获取指定月收入或支出合计
         /// </summary>
-        public decimal GetTodayTotalExpenditure()
+        /// <param name="date">指定日期</param>
+        /// <returns>指定月收入或支出合计</returns>
+        public decimal GetMonthTotalInOrEx(DateTime date, bool option)
         {
             decimal? totalIncome = dbContext.Set<Account>().
-                Where(x => x.AccountDate != null
-                && x.AccountDate.Year == DateTime.Now.Year
-                && x.AccountDate.Day == DateTime.Now.Day).Sum(x => x.Expenditure).GetValueOrDefault();
+                Where(x => x.DeleteFlg == CommConst.NotDeleted
+                && x.AccountDate.Year == date.Year
+                && x.AccountDate.Month == date.Month).Sum(x => option ? x.Income : x.Expenditure).GetValueOrDefault();
             return totalIncome == null ? decimal.Zero : (decimal)totalIncome;
+        }
+
+        /// <summary>
+        /// 获取一览账目明细
+        /// </summary>
+        public List<Account> GetListByDay(DateTime? dateFrom, DateTime? dateTo)
+        {
+            var query = dbContext.Set<Account>()
+                .Where(x => x.DeleteFlg == CommConst.NotDeleted
+                && dateFrom != null ? x.AccountDate >= dateFrom : true
+                && dateTo != null ? x.AccountDate <= dateTo : true)
+                .GroupBy(x => new
+                {
+                    Year = x.AccountDate.Year,
+                    Month = x.AccountDate.Month,
+                    Day = x.AccountDate.Day
+                })
+                .Select(y => new
+                {
+                    AccountDate = y.Key.Year.ToString() + "/" + y.Key.Month.ToString() + "/" + y.Key.Day.ToString(),
+                    Income = y.Sum(i => i.Income == null ? 0 : i.Income),
+                    Expenditure = y.Sum(e => e.Expenditure == null ? 0 : e.Expenditure),
+                    InCnt = y.Sum(cntIn => cntIn.SortCd.StartsWith(CommConst.IncomeCd) ? 1 : 0),
+                    ExCnt = y.Sum(cntEx => cntEx.SortCd.StartsWith(CommConst.ExpenditureCd) ? 1 : 0),
+                }).
+                OrderBy(z => z.AccountDate);
+
+            List<Account> list1 = new List<Account>();
+
+            query.ToList().ForEach(x =>
+            {
+                list1.Add(new Account
+                {
+                    AccountDate = DateTime.Parse(x.AccountDate),
+                    InInfo = $"{x.InCnt}笔,共{Convert.ToDecimal(x.Income).ToString("#,0.00")}元",
+                    ExInfo = $"{x.ExCnt}笔,共{Convert.ToDecimal(x.Expenditure).ToString("#,0.00")}元"
+                });
+            });
+
+            var list2 = this.GetMainInfo(list1);
+
+            var result = (from account in list1
+                          join accountJoin in list2
+                          on account.AccountDate equals accountJoin.AccountDate into temp
+                          from accountExtend in temp.DefaultIfEmpty()
+                          select new Account
+                          {
+                              DateStr = account.AccountDate.ToString("yyyy/MM/dd"),
+                              Income = account.Income,
+                              Expenditure = account.Expenditure,
+                              InInfo = account.InInfo,
+                              ExInfo = account.ExInfo,
+                              Summary = accountExtend.Summary
+                          }).OrderBy(x => x.DateStr).ToList();
+            return result;
+        }
+
+        /// <summary>
+        /// 得到每月主要信息
+        public List<Account> GetMainInfo(List<Account> accountList)
+        {
+            List<DateTime> dateList = accountList.Select(x => x.AccountDate).ToList();
+
+            List<Account> accountListNew = new List<Account>();
+            dateList.ForEach(date =>
+            {
+                StringBuilder sb = new StringBuilder();
+                var main = this.GetListDetial(date);
+                var mainIn = main.OrderByDescending(x => x.Income).FirstOrDefault();
+                if (mainIn != null)
+                {
+                    sb.Append(
+                        $"{mainIn.SortName}收入{Convert.ToDecimal(mainIn.Income).ToString("#,0.00")}元");
+                }
+                var mainEx = main.OrderByDescending(x => x.Expenditure).FirstOrDefault();
+                if (mainEx != null)
+                {
+                    if (sb.Length != 0)
+
+                    {
+                        sb.Append(",");
+                    }
+                    sb.Append(
+                        $"{mainEx.SortName}支出{Convert.ToDecimal(mainEx.Expenditure).ToString("#,0.00")}元");
+                }
+
+                accountListNew.Add(new Account
+                {
+                    AccountDate = date,
+                    Summary = sb.ToString()
+                });
+            });
+            return accountListNew;
+        }
+
+        /// <summary>
+        /// 得到每天的收入支出详情
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public List<Account> GetListDetial(DateTime date)
+        {
+            var query = (from account in dbContext.Set<Account>()
+                         join sortJoin in dbContext.Set<Sort>()
+                         on account.SortCd equals sortJoin.SortCd into sortTemp
+                         from sort in sortTemp.DefaultIfEmpty()
+                         where account.AccountDate.Year == date.Year
+                         && account.AccountDate.Month == date.Month
+                         && account.AccountDate.Day == date.Day
+                         select new
+                         {
+                             AccountDate = account.AccountDate,
+                             Income = account.Income,
+                             Expenditure = account.Income,
+                             SortName = sort.SortName
+                         }).ToList();
+            List<Account> result = new List<Account>();
+            query.ForEach(x => result.Add(new Account
+            {
+                AccountDate = x.AccountDate,
+                Income = x.Income,
+                Expenditure = x.Income,
+                SortName = x.SortName
+            }));
+            return result;
         }
     }
 }
