@@ -89,6 +89,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AccountBookContainer.edmx</DependentUpon>
     </Compile>
+    <Compile Include="AccountExtend.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sort.cs">
       <DependentUpon>AccountBookContainer.tt</DependentUpon>

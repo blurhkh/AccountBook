@@ -10,6 +10,7 @@ using AccountBook.Model;
 using AccountBook.Common;
 using static AccountBook.Common.AccountBookCommon;
 using System.Text;
+using System.Collections.Generic;
 
 namespace AccountBook.WPF
 {
@@ -43,7 +44,19 @@ namespace AccountBook.WPF
             this.InitSortCmb();
 
             // 显示今日合计
-            this.GetTodayTotal();
+            this.GetDayTotal(DateTime.Now);
+
+            // 显示本月合计
+            this.GetMonthTotal(DateTime.Now);
+
+            // 初始化日期显示
+            DateTime dateFrom = DateTime.Parse($"{DateTime.Now.Year}/{DateTime.Now.Month}/01");
+            DateTime dateTo = dateFrom.AddMonths(1).AddDays(-1);
+            this.dateFrom.SelectedDate = dateFrom;
+            this.dateTo.SelectedDate = dateTo;
+
+            // 获取一览信息
+            this.GetListByDay(dateFrom, dateTo, this.txtFilter.Text);
         }
         #endregion
 
@@ -229,9 +242,50 @@ namespace AccountBook.WPF
             decimal money = Convert.ToDecimal(txtMoney.Text);
             if (service.AddAccount(sortCd, money, txtComments.Text))
             {
-                this.GetTodayTotal();
+                this.GetDayTotal(DateTime.Now);
+                this.GetMonthTotal(DateTime.Now);
                 Message.ShowMessage("记录添加成功");
+                // 刷新显示
+                this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
+                this.GetDayTotal(DateTime.Now);
+                this.GetMonthTotal(DateTime.Now);
             }
+        }
+
+        /// <summary>
+        /// 一览明细选中事件
+        /// </summary>
+        private void dataGeneral_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Account account = this.dataGeneral.SelectedItem as Account;
+            if (account != null)
+            {
+                // 得到被选中的明细的日期
+                DateTime date = Convert.ToDateTime(account.DateStr);
+            }
+        }
+
+        /// <summary>
+        /// 开始时间发生变化
+        /// </summary>
+        private void dateFrom_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
+        }
+        /// <summary>
+        /// 结束时间发生变化
+        /// </summary>
+        private void dateTo_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
+        }
+
+        /// <summary>
+        /// 检索条件发生变化
+        /// </summary>
+        private void txtFilter_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
         }
         #endregion
 
@@ -270,13 +324,33 @@ namespace AccountBook.WPF
         }
 
         /// <summary>
-        /// 获取今日合计
+        /// 获取指定日合计
         /// </summary>
-        public void GetTodayTotal()
+        public void GetDayTotal(DateTime date)
         {
-            lblToday.Content =
-                $"本日总收入{service.GetTodayTotalIncome().ToString("#0.00")}元，总支出{service.GetTodayTotalExpenditure().ToString("#0.00")}元";
+            lblDay.Content =
+                $"本日总收入{service.GetDayTotalIn(date).ToString("#,0.00")}元，总支出{service.GetDayTotalEx(date).ToString("#,0.00")}元";
         }
-        #endregion     
+
+        /// <summary>
+        /// 获取指定月合计
+        /// </summary>
+        public void GetMonthTotal(DateTime date)
+        {
+            lblMonth.Content =
+               $"本月总收入{service.GetMonthTotalIn(date).ToString("#,0.00")}元，总支出{service.GetMonthTotalEx(date).ToString("#,0.00")}元";
+        }
+
+        /// <summary>
+        /// 获取一览数据
+        /// </summary>
+        public void GetListByDay(DateTime? dateFrom, DateTime? dateTo, string filter)
+        {
+            filter = filter.Trim();
+            this.dataGeneral.DataContext =
+                service.GetListByDay(dateFrom, dateTo)
+                .Where(x => string.IsNullOrEmpty(filter) ? true : x.Summary.Contains(filter));
+        }
+        #endregion
     }
 }

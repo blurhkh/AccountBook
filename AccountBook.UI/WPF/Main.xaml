@@ -35,12 +35,14 @@
                             <ColumnDefinition Width="1.5*"/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <Border   Grid.Column="0" BorderBrush="DarkGray" BorderThickness="0,0,2,0" >
+                        <Border Grid.Column="0" BorderBrush="DarkGray" BorderThickness="0,0,2,0" >
                             <Grid Name="grdSearch" Grid.Column="0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="30"/>
                                     <RowDefinition Height="30"/>
+                                    <RowDefinition Height="10"/>
                                     <RowDefinition/>
+                                    <RowDefinition Height="30"/>
                                 </Grid.RowDefinitions>
                                 <Label Grid.Row="0" Height="30" Content="账簿明细一览"  FontSize="15"
                                         BorderBrush="DarkGray" BorderThickness="0,0,0,1"
@@ -56,23 +58,40 @@
                                         <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Row="0"  Grid.Column="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1">
-                                        <DatePicker MinWidth="110" Height="30"  FontSize="13"  BorderThickness="0,0,0,0" VerticalContentAlignment="Center"/>
+                                        <DatePicker Name="dateFrom" MinWidth="110" Height="30"  FontSize="13"  BorderThickness="0,0,0,0" VerticalContentAlignment="Center" SelectedDateChanged="dateFrom_SelectedDateChanged"/>
                                     </Border>
                                     <Label Content="至" Grid.Row="0" Grid.Column="1" FontSize="13" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="30" Height="30" ></Label>
                                     <Border Grid.Row="0"  Grid.Column="2" BorderBrush="DarkGray" BorderThickness="0,0,0,1">
-                                        <DatePicker MinWidth="110" Height="30" FontSize="13" BorderThickness="0,0,0,0" VerticalContentAlignment="Center"/>
+                                        <DatePicker Name="dateTo" MinWidth="110" Height="30" FontSize="13" BorderThickness="0,0,0,0" VerticalContentAlignment="Center" SelectedDateChanged="dateTo_SelectedDateChanged"/>
                                     </Border>
                                     <Border Grid.Row="0" Grid.Column="4" BorderBrush="DarkGray" BorderThickness="0,0,0,1">
                                         <TextBox Grid.Row="0" Grid.Column="4" Height="30" 
+                                                 Name="txtFilter"
                                                  Background="Transparent" 
                                                  MinWidth="170"
                                                  BorderThickness="0,0,0,0"
                                                  FontSize="13"
                                                  HorizontalAlignment="Left"
-                                                 VerticalContentAlignment="Center"/>
+                                                 VerticalContentAlignment="Center" TextChanged="txtFilter_TextChanged"/>
                                     </Border>
                                     <Label Name="btnSearch" Grid.Column="5" ToolTip="检索" HorizontalAlignment="Center"  Height="30" Style="{StaticResource FontAwesome}" Content="&#xf002;" FontSize="15" MouseEnter="btnSearch_MouseEnter" MouseLeave="btnSearch_MouseLeave"/>
                                 </Grid>
+                                <ListView Name="dataGeneral" Grid.Row="3" ItemsSource="{Binding}" SelectionChanged="dataGeneral_SelectionChanged" >
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="日期" Width="100" DisplayMemberBinding="{Binding DateStr}"/>
+                                            <GridViewColumn Header="收入" Width="180" DisplayMemberBinding="{Binding InInfo}"/>
+                                            <GridViewColumn Header="支出" Width="180" DisplayMemberBinding="{Binding ExInfo}"/>
+                                            <GridViewColumn Header="摘要" DisplayMemberBinding="{Binding Summary}">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Width="auto" />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
                             </Grid>
                         </Border>
                         <Grid Name="grdAdd" Grid.Column="1" >
@@ -84,12 +103,13 @@
                                 <RowDefinition Height="40"/>
                                 <RowDefinition Height="40"/>
                                 <RowDefinition Height="40"/>
+                                <RowDefinition Height="30"/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <Label Name="lblTotal" Grid.Row="0" Height="30"  FontSize="15"
+                            <Label x:Name="lblMonth" Grid.Row="0" Height="30"  FontSize="15"
                                         BorderBrush="DarkGray" BorderThickness="0,0,0,1"
-                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
-                            <Label Name="lblToday" Grid.Row="1" Height="30"  FontSize="15"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                            <Label Name="lblDay" Grid.Row="1" Height="30"  FontSize="15"
                                         BorderBrush="DarkGray" BorderThickness="0,0,0,0"
                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
                             <Grid Grid.Row="2" Height="40" >
@@ -118,6 +138,23 @@
                             <Label Grid.Row="4" Margin="5" FontSize="13" Content="备注（50字以内）："></Label>
                             <TextBox Name="txtComments" Margin="5,0" FontSize="13" MaxLength="50" Grid.Row="5" TextWrapping="Wrap"></TextBox>
                             <Label Name="btnSave" Grid.Row="6" HorizontalAlignment="Right" Width="40" Style="{StaticResource FontAwesome}" Content="&#xf0c7;" FontSize="18px" ToolTip="保存记录" MouseDown="btnSave_MouseDown"></Label>
+                            <Label Name="lblDate" VerticalContentAlignment="Center" FontSize="13" Height="30"></Label>
+                            <ListView Grid.Row="8" Name="dataDetail">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="时间" Width="100" DisplayMemberBinding="{Binding DateStr}"/>
+                                        <GridViewColumn Header="分类" Width="100" DisplayMemberBinding="{Binding SortNm}"/>
+                                        <GridViewColumn Header="收入或支出" Width="180" DisplayMemberBinding="{Binding Money}"/>
+                                        <GridViewColumn Header="备注" DisplayMemberBinding="{Binding Comments}">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Width="auto" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
                         </Grid>
                     </Grid>
                 </Grid>

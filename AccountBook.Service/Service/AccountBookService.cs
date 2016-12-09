@@ -102,7 +102,7 @@ namespace AccountBook.Service
         /// <summary>
         /// 添加账目记录
         /// </summary>
-        public bool AddAccount(string sortCd, decimal money,string comments)
+        public bool AddAccount(string sortCd, decimal money, string comments)
         {
             Account account = new Account();
             account.SortCd = sortCd;
@@ -118,19 +118,52 @@ namespace AccountBook.Service
         }
 
         /// <summary>
-        /// 获取今日收入合计
+        /// 获取指定日收入合计
         /// </summary>
-        public decimal GetTodayTotalIncome()
+        /// <param name="date">指定日期</param>
+        /// <returns>指定日收入合计</returns>
+        public decimal GetDayTotalIn(DateTime date)
         {
-            return dal.GetTodayTotalIncome();
+            return dal.GetDayTotalInOrEx(date, true);
         }
 
         /// <summary>
-        /// 获取今日支出合计
+        /// 获取指定日支出合计
         /// </summary>
-        public decimal GetTodayTotalExpenditure()
+        /// <param name="date">指定日期</param>
+        /// <returns>指定日支出合计</returns>
+        public decimal GetDayTotalEx(DateTime date)
         {
-            return dal.GetTodayTotalExpenditure();
+            return dal.GetDayTotalInOrEx(date, false);
+        }
+
+        /// <summary>
+        ///  获取指定月收入合计
+        /// </summary>
+        /// <param name="date">指定日期</param>
+        /// <returns>指定月收入合计</returns>
+        public decimal GetMonthTotalIn(DateTime date)
+        {
+            return dal.GetMonthTotalInOrEx(date, true);
+        }
+
+        /// <summary>
+        ///  获取指定月支出合计
+        /// </summary>
+        /// <param name="date">指定日期</param>
+        /// <returns>指定月支出合计</returns>
+        public decimal GetMonthTotalEx(DateTime date)
+        {
+            return dal.GetMonthTotalInOrEx(date, false);
+        }
+
+        /// <summary>
+        /// 获取一览数据
+        /// </summary>
+        /// <returns></returns>
+        public List<Account> GetListByDay(DateTime? dateFrom, DateTime? dateTo)
+        {
+            return dal.GetListByDay(dateFrom, dateTo);
         }
     }
 }
