@@ -106,9 +106,7 @@ namespace AccountBook.WPF
                                 this.Close();
                                 Message.ShowMessage(message: "密码重置成功，请重新登录", flg: true);
                                 // 回到登录界面
-                                System.Reflection.Assembly.GetEntryAssembly();
-                                string startpath = System.IO.Directory.GetCurrentDirectory();
-                                System.Diagnostics.Process.Start(startpath + "/AccountBook.exe");
+                                ReLogin();
                             }
                         }
                     }
