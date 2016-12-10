@@ -20,7 +20,7 @@ namespace AccountBook.WPF
         // 获取程序运行根目录
         private string appPath = AppDomain.CurrentDomain.BaseDirectory;
 
-        public MainSkin( Main Owner)
+        public MainSkin(Main Owner)
         {
             InitializeComponent();
             main = Owner;
@@ -88,9 +88,13 @@ namespace AccountBook.WPF
         {
             if (this.backgroudImagePath != null)
             {
+                // 备份原背景
+                File.Copy(appPath + @"Resource\BackgroudImage\main.jpg",
+                    appPath + $"Resource\\BackgroudImage\\main{DateTime.Now.ToString("yyyyMMddHHmmss")}.jpg", true);
                 // 设置背景
-                File.Copy(this.backgroudImagePath, appPath + @"Resource\BackgroudImage\Main.jpg", true);
+                File.Copy(this.backgroudImagePath, appPath + @"Resource\BackgroudImage\main.jpg", true);
             }
+            this.Close();
         }
 
         /// <summary>
