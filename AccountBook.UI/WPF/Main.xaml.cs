@@ -57,6 +57,7 @@ namespace AccountBook.WPF
 
             // 获取一览信息
             this.GetListByDay(dateFrom, dateTo, this.txtFilter.Text);
+            this.GetListDetail(DateTime.Now);
         }
         #endregion
 
@@ -66,7 +67,8 @@ namespace AccountBook.WPF
         /// </summary>
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs args)
         {
-            if (args.OriginalSource is Window)
+            if (args.OriginalSource is Window ||
+                (args.OriginalSource is Grid && (args.OriginalSource as Grid).Name == this.grdMain.Name))
             {
                 this.DragMove();
             }
@@ -148,7 +150,12 @@ namespace AccountBook.WPF
         {
             // 备份数据文件
             this.MakeBackup();
-
+            // 删除数据
+            service.DeleteAll();
+            Message.ShowMessage("已成功清空所有数据");
+            // 回到登录界面
+            this.Close();
+            AccountBookCommon.ReLogin();
         }
 
         /// <summary>
@@ -262,6 +269,37 @@ namespace AccountBook.WPF
             {
                 // 得到被选中的明细的日期
                 DateTime date = Convert.ToDateTime(account.DateStr);
+                // 获取详情
+                this.GetListDetail(date);
+                this.GetDayTotal(date);
+            }
+        }
+
+        /// <summary>
+        /// 详细明细选中事件
+        /// </summary>
+        private void dataDetail_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Account account = this.dataDetail.SelectedItem as Account;
+            if (account != null)
+            {
+                if (account.SortCd.StartsWith(CommConst.IncomeCd))
+                {
+                    this.rdoIn.IsChecked = true;
+                    this.rdoIn_Checked(null, null);
+                }
+                else
+                {
+                    this.rdoEx.IsChecked = true;
+                    this.rdoEx_Checked(null, null);
+                }
+                this.cmbSort.SelectedValue = account.SortCd;
+                this.txtMoney.Text = account.MoneyStr.Remove(account.MoneyStr.Length - 1);
+                this.txtComments.Text = account.Comments;
+            }
+            else
+            {
+                this.InitEditArea();
             }
         }
 
@@ -270,6 +308,12 @@ namespace AccountBook.WPF
         /// </summary>
         private void dateFrom_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (this.dateFrom.SelectedDate != null
+                && this.dateFrom.SelectedDate > this.dateTo.SelectedDate)
+            {
+                Message.ShowMessage("开始时间不得大于结束时间");
+                this.dateFrom.SelectedDate = this.dateTo.SelectedDate;
+            }
             this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
         }
         /// <summary>
@@ -277,6 +321,12 @@ namespace AccountBook.WPF
         /// </summary>
         private void dateTo_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (this.dateTo.SelectedDate != null
+                && this.dateFrom.SelectedDate > this.dateTo.SelectedDate)
+            {
+                Message.ShowMessage("结束时间不得小于开始时间");
+                this.dateTo.SelectedDate = this.dateFrom.SelectedDate;
+            }
             this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
         }
 
@@ -306,16 +356,16 @@ namespace AccountBook.WPF
         /// <summary>
         /// 备份数据文件
         /// </summary>
-        public void MakeBackup()
+        private void MakeBackup()
         {
             string path = appPath + @"AppData\AccountBook";
-            File.Copy($"{path}.db", $"{path}.bk", true);
+            File.Copy($"{path}.db", $"{path}{DateTime.Now.ToString("yyyyMMddHHmmss")}.bk", true);
         }
 
         /// <summary>
         /// 初始化分类下拉框
         /// </summary>
-        public void InitSortCmb(string kind = CommConst.IncomeCd)
+        private void InitSortCmb(string kind = CommConst.IncomeCd)
         {
             cmbSort.ItemsSource = service.GetSorts().Where(x => x.SortCd.StartsWith(kind)).OrderBy(x => x.SortCd);
             cmbSort.SelectedValuePath = "SortCd";
@@ -326,30 +376,49 @@ namespace AccountBook.WPF
         /// <summary>
         /// 获取指定日合计
         /// </summary>
-        public void GetDayTotal(DateTime date)
+        private void GetDayTotal(DateTime date)
         {
             lblDay.Content =
-                $"本日总收入{service.GetDayTotalIn(date).ToString("#,0.00")}元，总支出{service.GetDayTotalEx(date).ToString("#,0.00")}元";
+                $"{date.Month}月{date.Day}日总收入{service.GetDayTotalIn(date).ToString("#,0.00")}元，总支出{service.GetDayTotalEx(date).ToString("#,0.00")}元";
         }
 
         /// <summary>
         /// 获取指定月合计
         /// </summary>
-        public void GetMonthTotal(DateTime date)
+        private void GetMonthTotal(DateTime date)
         {
             lblMonth.Content =
-               $"本月总收入{service.GetMonthTotalIn(date).ToString("#,0.00")}元，总支出{service.GetMonthTotalEx(date).ToString("#,0.00")}元";
+               $"{date.Month}月总收入{service.GetMonthTotalIn(date).ToString("#,0.00")}元，总支出{service.GetMonthTotalEx(date).ToString("#,0.00")}元";
         }
 
         /// <summary>
         /// 获取一览数据
         /// </summary>
-        public void GetListByDay(DateTime? dateFrom, DateTime? dateTo, string filter)
+        private void GetListByDay(DateTime? dateFrom, DateTime? dateTo, string filter)
         {
             filter = filter.Trim();
             this.dataGeneral.DataContext =
                 service.GetListByDay(dateFrom, dateTo)
                 .Where(x => string.IsNullOrEmpty(filter) ? true : x.Summary.Contains(filter));
+        }
+
+        /// <summary>
+        /// 得到指定日的收入支出详情
+        /// </summary>
+        private void GetListDetail(DateTime date)
+        {
+            this.dataDetail.DataContext = service.GetListDetail(date);
+        }
+
+        /// <summary>
+        /// 初始化编辑部
+        /// </summary>
+        public void InitEditArea()
+        {
+            this.rdoIn.IsChecked = true;
+            this.rdoIn_Checked(null, null);
+            this.txtMoney.Text = string.Empty;
+            this.txtComments.Text = string.Empty;
         }
         #endregion
     }

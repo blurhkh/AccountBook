@@ -132,7 +132,6 @@ namespace AccountBook.DAL
         /// </summary>
         public bool EditAccount(Account account)
         {
-            dbContext.Database.BeginTransaction();
             dbContext.Entry(account).State = EntityState.Modified;
             account.UpdateDate = DateTime.Now;
             return dbContext.SaveChanges() > 0;
@@ -174,8 +173,8 @@ namespace AccountBook.DAL
         {
             var query = dbContext.Set<Account>()
                 .Where(x => x.DeleteFlg == CommConst.NotDeleted
-                && dateFrom != null ? x.AccountDate >= dateFrom : true
-                && dateTo != null ? x.AccountDate <= dateTo : true)
+                && (dateFrom != null ? x.AccountDate >= dateFrom : true)
+                && (dateTo != null ? x.AccountDate <= dateTo : true))
                 .GroupBy(x => new
                 {
                     Year = x.AccountDate.Year,
@@ -190,11 +189,11 @@ namespace AccountBook.DAL
                     InCnt = y.Sum(cntIn => cntIn.SortCd.StartsWith(CommConst.IncomeCd) ? 1 : 0),
                     ExCnt = y.Sum(cntEx => cntEx.SortCd.StartsWith(CommConst.ExpenditureCd) ? 1 : 0),
                 }).
-                OrderBy(z => z.AccountDate);
+                OrderBy(z => z.AccountDate).ToList();
 
             List<Account> list1 = new List<Account>();
 
-            query.ToList().ForEach(x =>
+            query.ForEach(x =>
             {
                 list1.Add(new Account
                 {
@@ -229,18 +228,19 @@ namespace AccountBook.DAL
             List<DateTime> dateList = accountList.Select(x => x.AccountDate).ToList();
 
             List<Account> accountListNew = new List<Account>();
+            StringBuilder sb = new StringBuilder();
             dateList.ForEach(date =>
             {
-                StringBuilder sb = new StringBuilder();
+                sb.Length = 0;
                 var main = this.GetListDetial(date);
                 var mainIn = main.OrderByDescending(x => x.Income).FirstOrDefault();
-                if (mainIn != null)
+                if (mainIn.Income != null)
                 {
                     sb.Append(
-                        $"{mainIn.SortName}收入{Convert.ToDecimal(mainIn.Income).ToString("#,0.00")}元");
+                        $"{mainIn.SortName}{Convert.ToDecimal(mainIn.Income).ToString("#,0.00")}元");
                 }
                 var mainEx = main.OrderByDescending(x => x.Expenditure).FirstOrDefault();
-                if (mainEx != null)
+                if (mainEx.Expenditure != null)
                 {
                     if (sb.Length != 0)
 
@@ -248,20 +248,20 @@ namespace AccountBook.DAL
                         sb.Append(",");
                     }
                     sb.Append(
-                        $"{mainEx.SortName}支出{Convert.ToDecimal(mainEx.Expenditure).ToString("#,0.00")}元");
+                        $"{mainEx.SortName}{Convert.ToDecimal(mainEx.Expenditure).ToString("#,0.00")}元");
                 }
 
                 accountListNew.Add(new Account
                 {
                     AccountDate = date,
-                    Summary = sb.ToString()
+                    Summary = sb.Replace("（", "").Replace("）", "").ToString()
                 });
             });
             return accountListNew;
         }
 
         /// <summary>
-        /// 得到每天的收入支出详情
+        /// 得到指定日的收入支出详情
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
@@ -278,18 +278,45 @@ namespace AccountBook.DAL
                          {
                              AccountDate = account.AccountDate,
                              Income = account.Income,
-                             Expenditure = account.Income,
-                             SortName = sort.SortName
+                             Expenditure = account.Expenditure,
+                             SortCd = sort.SortCd,
+                             SortName = sort.SortName,
+                             Comments = account.Comments,
+                             Money = account.Income != null ? account.Income : account.Expenditure
                          }).ToList();
             List<Account> result = new List<Account>();
             query.ForEach(x => result.Add(new Account
             {
                 AccountDate = x.AccountDate,
+                DateStr = x.AccountDate.ToString("HH:mm:ss"),
                 Income = x.Income,
-                Expenditure = x.Income,
-                SortName = x.SortName
+                Expenditure = x.Expenditure,
+                SortCd = x.SortCd,
+                SortName = x.SortName + (x.SortCd.StartsWith(CommConst.IncomeCd) ? "（收入）" : "（支出）"),
+                Comments = x.Comments,
+                MoneyStr = Convert.ToDecimal(x.Money).ToString("#,0.00") + "元"
             }));
-            return result;
+            return result.OrderBy(x => x.AccountDate).ToList();
+        }
+
+        /// <summary>
+        /// 删除所有账目数据
+        /// </summary>
+        /// <returns></returns>
+        public void DeleteAll()
+        {
+            // 开启事务
+            int count;
+            using (var dbContextTransaction = dbContext.Database.BeginTransaction())
+            {
+                // 清空密码
+                this.SetPwd(null);
+                // 清空账户
+                StringBuilder sql = new StringBuilder();
+                sql.Append("DELETE FROM ACCOUNT");
+                count = dbContext.Database.ExecuteSqlCommand(sql.ToString());
+                dbContextTransaction.Commit();
+            }
         }
     }
 }

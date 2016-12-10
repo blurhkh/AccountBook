@@ -175,12 +175,18 @@ namespace AccountBook.WPF
         {
             if (this.portraitPath != null)
             {
+                // 备份原头像
+                File.Copy(appPath + @"Resource\Portrait\2121.jpg",
+                    appPath + $"Resource\\Portrait\\2121{DateTime.Now.ToString("yyyyMMddHHmmss")}.jpg", true);
                 // 设置头像
                 File.Copy(this.portraitPath, appPath + @"Resource\Portrait\2121.jpg", true);
             }
 
             if (this.backgroudImagePath != null)
             {
+                // 备份原背景
+                File.Copy(appPath + @"Resource\BackgroudImage\login.jpg",
+                    appPath + $"Resource\\BackgroudImage\\login{DateTime.Now.ToString("yyyyMMddHHmmss")}.jpg", true);
                 // 设置背景
                 File.Copy(this.backgroudImagePath, appPath + @"Resource\BackgroudImage\login.jpg", true);
             }

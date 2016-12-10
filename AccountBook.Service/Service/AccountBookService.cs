@@ -114,6 +114,7 @@ namespace AccountBook.Service
             {
                 account.Expenditure = money;
             }
+            account.Comments = comments;
             return dal.AddAccount(account);
         }
 
@@ -163,7 +164,25 @@ namespace AccountBook.Service
         /// <returns></returns>
         public List<Account> GetListByDay(DateTime? dateFrom, DateTime? dateTo)
         {
+            dateTo = dateTo?.AddDays(1).AddSeconds(-1);
             return dal.GetListByDay(dateFrom, dateTo);
+        }
+
+        /// <summary>
+        /// 得到指定日的收入支出详情
+        /// </summary>
+        public List<Account> GetListDetail(DateTime date)
+        {
+            return dal.GetListDetial(date);
+        }
+
+        /// <summary>
+        /// 删除所有账目数据
+        /// </summary>
+        /// <returns></returns>
+        public void DeleteAll()
+        {
+            dal.DeleteAll();
         }
     }
 }

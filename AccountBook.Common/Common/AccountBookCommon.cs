@@ -32,5 +32,15 @@ namespace AccountBook.Common
 
             return bitmap;
         }
+
+        /// <summary>
+        /// 重启软件
+        /// </summary>
+        public static void ReLogin()
+        {
+            System.Reflection.Assembly.GetEntryAssembly();
+            string startpath = System.IO.Directory.GetCurrentDirectory();
+            System.Diagnostics.Process.Start(startpath + "/AccountBook.exe");
+        }
     }
 }
