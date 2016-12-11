@@ -42,5 +42,24 @@ namespace AccountBook.Common
             string startpath = System.IO.Directory.GetCurrentDirectory();
             System.Diagnostics.Process.Start(startpath + "/AccountBook.exe");
         }
+
+        /// <summary>
+        /// 输出日志文件
+        /// </summary>
+        public static void Log(string txt)
+        {
+            //使用FileStream来写入数据
+            if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}Log"))
+            {
+                Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}Log");
+            }
+            string path = $"{AppDomain.CurrentDomain.BaseDirectory}Log\\{DateTime.Now.ToString("yyyyMMddHHmmss")}.log";
+            using (FileStream fsWrite = new FileStream(path, FileMode.Append, FileAccess.Write))
+            {
+                //将字符 串转换成字节数组
+                byte[] buffer = System.Text.Encoding.Default.GetBytes(txt);
+                fsWrite.Write(buffer, 0, buffer.Length);
+            }
+        }
     }
 }
