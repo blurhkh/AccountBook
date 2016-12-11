@@ -106,7 +106,7 @@ namespace AccountBook.WPF
                         int count = service.GetSorts().Where(x => x.SortName == txtNewSort.Text).Count();
                         if (count > 0)
                         {
-                            Message.ShowMessage("请勿添加重复数据");
+                            Message.ShowMessage("请勿添加重复数据", errorFlg: true);
                         }
                         else
                         {
@@ -122,13 +122,13 @@ namespace AccountBook.WPF
                         var record = service.GetSorts().Where(x => x.SortName == txtNewSort.Text).ToList();
                         if (record.Count() > 0 && record[0].SortCd != sortCd)
                         {
-                            Message.ShowMessage("请勿修改为已有分类");
+                            Message.ShowMessage("请勿修改为已有分类", errorFlg: true);
                         }
 
                         else if (record.Count() > 0 && record[0].SortCd == sortCd)
                         {
                             this.Close();
-                            Message.ShowMessage("并未对所选分类做出任何修改");
+                            Message.ShowMessage("并未对所选分类做出任何修改", errorFlg: true);
                         }
                         else
                         {
@@ -136,13 +136,13 @@ namespace AccountBook.WPF
                             {
                                 this.Close();
                                 Message.ShowMessage("分类修改成功");
-                            }                        
+                            }
                         }
                     }
                 }
                 else
                 {
-                    Message.ShowMessage("请输入1至10位字符作为分类名");
+                    Message.ShowMessage("请输入1至10位字符作为分类名", errorFlg: true);
                 }
             }
         }

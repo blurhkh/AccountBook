@@ -152,9 +152,8 @@ namespace AccountBook.WPF
             this.MakeBackup();
             // 删除数据
             service.DeleteAll();
-            Message.ShowMessage("已成功清空所有数据");
+            Message.ShowMessage("已成功清空所有数据", shutdownFlg: true);
             // 回到登录界面
-            this.Close();
             AccountBookCommon.ReLogin();
         }
 
@@ -220,7 +219,7 @@ namespace AccountBook.WPF
             else
             {
                 txtMoney.Text = string.Empty;
-                Message.ShowMessage("请勿输入非法字符");
+                Message.ShowMessage("请勿输入非法字符", errorFlg: true);
             }
         }
 
@@ -241,7 +240,7 @@ namespace AccountBook.WPF
         {
             if (txtMoney.Text.Trim().Length == 0)
             {
-                Message.ShowMessage("金额不能为空");
+                Message.ShowMessage("金额不能为空", errorFlg: true);
                 return;
             }
             // 得到分类号
@@ -311,7 +310,7 @@ namespace AccountBook.WPF
             if (this.dateFrom.SelectedDate != null
                 && this.dateFrom.SelectedDate > this.dateTo.SelectedDate)
             {
-                Message.ShowMessage("开始时间不得大于结束时间");
+                Message.ShowMessage("开始时间不得大于结束时间", errorFlg: true);
                 this.dateFrom.SelectedDate = this.dateTo.SelectedDate;
             }
             this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
@@ -324,7 +323,7 @@ namespace AccountBook.WPF
             if (this.dateTo.SelectedDate != null
                 && this.dateFrom.SelectedDate > this.dateTo.SelectedDate)
             {
-                Message.ShowMessage("结束时间不得小于开始时间");
+                Message.ShowMessage("结束时间不得小于开始时间", errorFlg: true);
                 this.dateTo.SelectedDate = this.dateFrom.SelectedDate;
             }
             this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);

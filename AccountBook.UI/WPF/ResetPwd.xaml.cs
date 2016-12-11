@@ -104,7 +104,7 @@ namespace AccountBook.WPF
                             else
                             {
                                 this.Close();
-                                Message.ShowMessage(message: "密码重置成功，请重新登录", flg: true);
+                                Message.ShowMessage(message: "密码重置成功，请重新登录", shutdownFlg: true);
                                 // 回到登录界面
                                 ReLogin();
                             }
