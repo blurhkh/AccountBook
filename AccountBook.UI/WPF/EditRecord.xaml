@@ -1,0 +1,88 @@
+﻿<Window x:Class="AccountBook.WPF.EditRecord"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AccountBook.WPF"
+        xmlns:WMControl="clr-namespace:WMControl;assembly=WMControl"
+        mc:Ignorable="d"
+        Name="winEdit"
+        Title="EditRecord" Width="388" Height="275"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" 
+        AllowsTransparency="True"
+        Background="Transparent"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    <Grid HorizontalAlignment="Center" Background="Transparent">
+        <Border Name="border" BorderBrush="Black" Margin="0" >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <WMControl:WMButton 
+                    Name="btnClose"
+                    ToolTip="关闭"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" Width="27" Height="22" Margin="0,0,5,0" Click="btnClose_Click" >
+                    <WMControl:WMButton.MyMoverBrush>
+                        <ImageBrush ImageSource="Resource/Button/xm.png"/>
+                    </WMControl:WMButton.MyMoverBrush>
+                    <WMControl:WMButton.MyEnterBrush>
+                        <ImageBrush ImageSource="Resource/Button/xe.png"/>
+                    </WMControl:WMButton.MyEnterBrush>
+                    <WMControl:WMButton.Background>
+                        <ImageBrush ImageSource="Resource/Button/xn.png"/>
+                    </WMControl:WMButton.Background>
+                </WMControl:WMButton>
+                <Label Content="新增或者修改明细" Name="lblTitle" Foreground="White" Margin="10,0,0,0" Width="150" HorizontalAlignment="Left"/>
+                <Grid Grid.Row="1" Width="388" Height="250" Background="White" Opacity="0.7">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Name="lblDate" Margin="10,0,0,0"></Label>
+                    <Grid Grid.Row="2" Height="40" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="15"></ColumnDefinition>
+                            <ColumnDefinition Width="140"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition MinWidth="100" MaxWidth="150" Width="100*"></ColumnDefinition>
+                            <ColumnDefinition Width="30"></ColumnDefinition>
+                            <ColumnDefinition Width="73*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="1" Width="140" Margin="0,5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition></ColumnDefinition>
+                                    <ColumnDefinition></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <RadioButton Name="rdoIn" Grid.Column="0" Margin="5" GroupName="InOrEx" Content="收入" FontSize="12" VerticalContentAlignment="Center" Checked="rdoIn_Checked"></RadioButton>
+                                <RadioButton Name="rdoEx" Grid.Column="1" Margin="5" GroupName="InOrEx" Content="支出" FontSize="12"  VerticalContentAlignment="Center" Checked="rdoEx_Checked"></RadioButton>
+                            </Grid>
+                        </Border>
+                        <ComboBox ToolTip="分类" Name="cmbSort" Grid.Column="3" Height="25"  FontSize="12" VerticalContentAlignment="Center"/>
+                        <Label Name="btnEditSorts"  ToolTip="编辑分类信息" Style="{StaticResource FontAwesome}" Content="&#xf044;" Height="30" Grid.Column="4"  FontSize="18" MouseDown="btnEditSorts_MouseDown" ></Label>
+                    </Grid>
+                    <Grid Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="1" Name="lblMoney" FontSize="12"  Margin="5" Content="金额" VerticalContentAlignment="Center"></Label>
+                        <TextBox Grid.Column="2" Name="txtMoney" FontSize="12" BorderThickness="0,0,0,1" Margin="5" MaxLength="12" VerticalContentAlignment="Center" HorizontalAlignment="Left" LostFocus="txtMoney_LostFocus" GotFocus="txtMoney_GotFocus" Width="180"></TextBox>
+                    </Grid>
+                    <Label HorizontalAlignment="Left" Width="120" Grid.Row="4" Margin="10,5,5,5" FontSize="12" Content="备注（50字以内）："></Label>
+                    <TextBox Name="txtComments" Margin="10,0" FontSize="13" MaxLength="50" Grid.Row="5" TextWrapping="Wrap"></TextBox>
+                    <Label Name="btnSave" Grid.Row="6" HorizontalAlignment="Right" Width="40" Style="{StaticResource FontAwesome}" Content="&#xf0c7;" FontSize="18px" ToolTip="保存记录" MouseDown="btnSave_MouseDown"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
