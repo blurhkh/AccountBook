@@ -102,9 +102,29 @@ namespace AccountBook.Service
         /// <summary>
         /// 添加账目记录
         /// </summary>
-        public bool AddAccount(string sortCd, decimal money, string comments)
+        public bool AddAccount(string sortCd, decimal money, string comments, DateTime? accountDate = null)
         {
             Account account = new Account();
+            // 判断是不是追加的记录
+            if (!accountDate.HasValue)
+            {
+                account.AccountDate = Convert.ToDateTime(DateTime.Now.ToString("s"));
+            }
+            else
+            {
+                var date = this.GetListDetail(accountDate.Value).
+                     OrderByDescending(x => x.AccountDate).FirstOrDefault()?.AccountDate;
+                if (date.HasValue)
+                {
+                    // 从最后一条的记录加1秒开始
+                    account.AccountDate = date.Value.AddSeconds(1);
+                }
+                else
+                {
+                    // 从这一天的第1秒开始
+                    account.AccountDate = accountDate.Value.AddSeconds(1);
+                }
+            }
             account.SortCd = sortCd;
             if (sortCd.StartsWith(CommConst.IncomeCd))
             {
@@ -116,6 +136,26 @@ namespace AccountBook.Service
             }
             account.Comments = comments;
             return dal.AddAccount(account);
+        }
+
+        /// <summary>
+        /// 更新账目记录
+        /// </summary>
+        public bool EditAccount(DateTime accountDate, string sortCd, decimal money, string comments)
+        {
+            Account account = new Account();
+            account.AccountDate = accountDate;
+            account.SortCd = sortCd;
+            if (sortCd.StartsWith(CommConst.IncomeCd))
+            {
+                account.Income = money;
+            }
+            else
+            {
+                account.Expenditure = money;
+            }
+            account.Comments = comments;
+            return dal.EditAccount(account);
         }
 
         /// <summary>
@@ -183,6 +223,15 @@ namespace AccountBook.Service
         public void DeleteAll()
         {
             dal.DeleteAll();
+        }
+
+        /// <summary>
+        /// 删除指定账目数据
+        /// </summary>
+        /// <returns></returns>
+        public int DeleteAccount(List<Account> list)
+        {
+            return dal.DeleteAccount(list.Select(account => account.AccountDate).ToList());
         }
     }
 }

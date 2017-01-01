@@ -110,9 +110,17 @@ namespace AccountBook.DAL
         /// <param name="sortCd"></param>
         public bool RemoveSort(string sortCd)
         {
-            var record = dbContext.Set<Sort>().Where(x => x.SortCd == sortCd).FirstOrDefault();
-            dbContext.Set<Sort>().Remove(record);
-            return dbContext.SaveChanges() > 0;
+            if (dbContext.Set<Account>().Where(x => x.SortCd == sortCd).FirstOrDefault() == null)
+            {
+                var record = dbContext.Set<Sort>().Where(x => x.SortCd == sortCd).FirstOrDefault();
+                dbContext.Set<Sort>().Remove(record);
+                return dbContext.SaveChanges() > 0;
+            }
+            else
+            {
+                return false;
+            }
+
         }
 
         /// <summary>
@@ -120,7 +128,6 @@ namespace AccountBook.DAL
         /// </summary>
         public bool AddAccount(Account account)
         {
-            account.AccountDate = Convert.ToDateTime(DateTime.Now.ToString("s"));
             account.UpdateDate = Convert.ToDateTime(DateTime.Now.ToString("s"));
             account.DeleteFlg = CommConst.NotDeleted;
             dbContext.Set<Account>().Add(account);
@@ -132,6 +139,7 @@ namespace AccountBook.DAL
         /// </summary>
         public bool EditAccount(Account account)
         {
+            account.UpdateDate = Convert.ToDateTime(DateTime.Now.ToString("s"));
             dbContext.Entry(account).State = EntityState.Modified;
             account.UpdateDate = DateTime.Now;
             return dbContext.SaveChanges() > 0;
@@ -274,6 +282,7 @@ namespace AccountBook.DAL
                          where account.AccountDate.Year == date.Year
                          && account.AccountDate.Month == date.Month
                          && account.AccountDate.Day == date.Day
+                         && account.DeleteFlg == CommConst.NotDeleted
                          select new
                          {
                              AccountDate = account.AccountDate,
@@ -306,7 +315,6 @@ namespace AccountBook.DAL
         public void DeleteAll()
         {
             // 开启事务
-            int count;
             using (var dbContextTransaction = dbContext.Database.BeginTransaction())
             {
                 // 清空密码
@@ -314,9 +322,24 @@ namespace AccountBook.DAL
                 // 清空账户
                 StringBuilder sql = new StringBuilder();
                 sql.Append("DELETE FROM ACCOUNT");
-                count = dbContext.Database.ExecuteSqlCommand(sql.ToString());
+                dbContext.Database.ExecuteSqlCommand(sql.ToString());
                 dbContextTransaction.Commit();
             }
+        }
+
+        public int DeleteAccount(List<DateTime> list)
+        {
+            // 开启事务
+            int count;
+            using (var dbContextTransaction = dbContext.Database.BeginTransaction())
+            {
+                // 清空账户
+                dbContext.Set<Account>().RemoveRange(dbContext.Set<Account>().
+                    Where(account => list.Contains(account.AccountDate)));
+                count = dbContext.SaveChanges();
+                dbContextTransaction.Commit();
+            }
+            return count;
         }
     }
 }

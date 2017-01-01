@@ -39,5 +39,10 @@ namespace AccountBook.Model
         /// 金额
         /// </summary>
         public string MoneyStr { get; set; }
+
+        /// <summary>
+        /// 是否被选中
+        /// </summary>
+        public bool IsChecked { get; set; }
     }
 }

@@ -13,6 +13,13 @@
         ResizeMode = "NoResize"
         AllowsTransparency="True"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    <Window.Resources>
+        <Style x:Key="ItemDoubleClick" TargetType="ListViewItem">
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="12"/>
+            <EventSetter Event="MouseDoubleClick" Handler="Item_DoubleClick" />
+        </Style>
+    </Window.Resources>
     <Grid Name="grdMain">
         <Grid.RowDefinitions>
             <RowDefinition Height="22"/>
@@ -112,12 +119,6 @@
                                 <RowDefinition Height="30"/>
                                 <RowDefinition/>
                                 <RowDefinition Height="40"/>
-                                <RowDefinition Height="40"/>
-                                <RowDefinition Height="40"/>
-                                <RowDefinition Height="40"/>
-                                <RowDefinition Height="40"/>
-                                <RowDefinition Height="40"/>
-                                <RowDefinition Height="30"/>
                             </Grid.RowDefinitions>
                             <Label x:Name="lblMonth" Grid.Row="0" Height="30"  FontSize="13"
                                         BorderBrush="DarkGray" BorderThickness="0,0,0,1"
@@ -125,9 +126,19 @@
                             <Label Name="lblDay" Grid.Row="1" Height="30"  FontSize="13"
                                         BorderBrush="DarkGray" BorderThickness="0,0,0,0"
                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
-                            <ListView Grid.Row="2" Name="dataDetail" ItemsSource="{Binding}" Margin="0,10,0,0" SelectionChanged="dataDetail_SelectionChanged">
+                            <ListView Grid.Row="2" ItemContainerStyle="{StaticResource ItemDoubleClick}" Name="dataDetail" ItemsSource="{Binding}" Margin="0,10,0,0">
                                 <ListView.View>
                                     <GridView>
+                                        <GridViewColumn  Width="auto">
+                                            <GridViewColumn.Header>
+                                                <CheckBox Name="chkAll" Click="chkAll_Click"></CheckBox>
+                                            </GridViewColumn.Header>
+                                            <GridViewColumn.CellTemplate >
+                                                <DataTemplate>
+                                                    <CheckBox IsChecked="{Binding IsChecked}"></CheckBox>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
                                         <GridViewColumn Header="时间" Width="65" DisplayMemberBinding="{Binding DateStr}"/>
                                         <GridViewColumn Header="分类" Width="120">
                                             <GridViewColumn.CellTemplate>
@@ -143,45 +154,28 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="备注" DisplayMemberBinding="{Binding Comments}"/>
+                                        <GridViewColumn  Width="auto" Header="备注" DisplayMemberBinding="{Binding Comments}"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
                             <Grid Grid.Row="3">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="40"/>
                                     <ColumnDefinition Width="110"/>
-                                    <ColumnDefinition Width="20"/>  
+                                    <ColumnDefinition Width="20"/>
                                     <ColumnDefinition Width="40"/>
                                 </Grid.ColumnDefinitions>
-                                <DatePicker Name="dateEdit" MinWidth="110" Height="30" Margin="5,0,0,0" FontSize="13"  BorderThickness="0,0,0,0" VerticalContentAlignment="Center" SelectedDateChanged="dateFrom_SelectedDateChanged"/>
-                                <Label Name="btnAdd" Grid.Column="2" HorizontalAlignment="Right" Width="40" Style="{StaticResource FontAwesome}" Content="&#xf0fe;" FontSize="18px" ToolTip="添加记录" MouseDown="btnSave_MouseDown"></Label>
+                                <Label Name="btnDel" Grid.Column="0" HorizontalAlignment="Center" Width="30" Style="{StaticResource FontAwesome}" Content="&#xf014;" FontSize="18px" ToolTip="删除选中日期的记录" MouseDown="btnDel_MouseDown"></Label>
+                                <DatePicker Grid.Column="2" Name="dateEdit" MinWidth="110" Height="30" Margin="5,0,0,0" FontSize="13"  BorderThickness="0,0,0,0" VerticalContentAlignment="Center" SelectedDateChanged="dateFrom_SelectedDateChanged">
+                                    <DatePicker.Resources>
+                                        <Style TargetType="DatePickerTextBox">
+                                            <Setter Property="IsReadOnly" Value="True"/>
+                                        </Style>
+                                    </DatePicker.Resources>
+                                </DatePicker>
+                                <Label Name="btnAdd" Grid.Column="4" HorizontalAlignment="Right" Width="40" Style="{StaticResource FontAwesome}" Content="&#xf0fe;" FontSize="18px" ToolTip="添加选中日期的记录" MouseDown="btnAdd_MouseDown"></Label>
                             </Grid>
-                            <Grid Grid.Row="4" Height="40" >
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="5"></ColumnDefinition>
-                                    <ColumnDefinition Width="70"></ColumnDefinition>
-                                    <ColumnDefinition Width="70"></ColumnDefinition>
-                                    <ColumnDefinition Width="50"></ColumnDefinition>
-                                    <ColumnDefinition MinWidth="100" MaxWidth="150"></ColumnDefinition>
-                                    <ColumnDefinition Width="30"></ColumnDefinition>
-                                    <ColumnDefinition></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <RadioButton Name="rdoIn" Grid.Column="1" Margin="5" GroupName="InOrEx" Content="收入" FontSize="12" VerticalContentAlignment="Center" Checked="rdoIn_Checked"></RadioButton>
-                                <RadioButton Name="rdoEx" Grid.Column="2" Margin="5" GroupName="InOrEx" Content="支出" FontSize="12"  VerticalContentAlignment="Center" Checked="rdoEx_Checked"></RadioButton>
-                                <ComboBox ToolTip="分类" Name="cmbSort" Grid.Column="4" Height="25"  FontSize="12" VerticalContentAlignment="Center"/>
-                                <Label Name="btnEditSorts"  ToolTip="编辑分类信息" Style="{StaticResource FontAwesome}" Content="&#xf044;" Height="30" Grid.Column="5"  FontSize="18" MouseDown="btnEditSorts_MouseDown" ></Label>
-                            </Grid>
-                            <Grid Grid.Row="5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <Label Grid.Column="0" Name="lblMoney" FontSize="12"  Margin="5" Content="金额" VerticalContentAlignment="Center"></Label>
-                                <TextBox Grid.Column="1" Name="txtMoney" FontSize="12" BorderThickness="0,0,0,1" Margin="5" MaxLength="12" VerticalContentAlignment="Center" LostFocus="txtMoney_LostFocus" GotFocus="txtMoney_GotFocus"></TextBox>
-                            </Grid>
-                            <Label Grid.Row="6" Margin="5" FontSize="12" Content="备注（50字以内）："></Label>
-                            <TextBox Name="txtComments" Margin="5,0" FontSize="13" MaxLength="50" Grid.Row="7" TextWrapping="Wrap"></TextBox>
-                            <Label Name="btnSave" Grid.Row="8" HorizontalAlignment="Right" Width="40" Style="{StaticResource FontAwesome}" Content="&#xf0c7;" FontSize="18px" ToolTip="保存记录" MouseDown="btnSave_MouseDown"></Label>
                         </Grid>
                     </Grid>
                 </Grid>

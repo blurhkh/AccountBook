@@ -47,7 +47,7 @@ namespace AccountBook.WPF
         }
 
         /// <summary>
-        /// 关闭消息框
+        /// 关闭确认框
         /// </summary>
         private void btnMessageClose_Click(object sender, RoutedEventArgs e)
         {

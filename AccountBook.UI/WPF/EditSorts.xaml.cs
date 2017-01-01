@@ -96,6 +96,10 @@ namespace AccountBook.WPF
                     this.Close();
                     Message.ShowMessage("删除分类成功");
                 }
+                else
+                {
+                    Message.ShowMessage("请勿删除已用分类");
+                }
             }
             else
             {

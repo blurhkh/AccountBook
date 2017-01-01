@@ -21,15 +21,24 @@ namespace AccountBook.WPF
     {
         #region 字段
         private AccountBookService service = new AccountBookService();
+        // 是否正在处理
+        private bool isDoing = false;
         // 获取程序运行根目录
         private string appPath = AppDomain.CurrentDomain.BaseDirectory;
+        #endregion
+
+        #region 属性
+        // 是否确定要进行处理
+        public bool ConfirmFlg { get; set; }
+        // 表示是否添加或者修改数据成功
+        public bool SuccessFlg { get; set; }
         #endregion
 
         #region 构造函数
         public Main()
         {
             InitializeComponent();
-            //缩放，最大化修复
+            // 缩放，最大化修复
             WindowBehaviorHelper wh = new WindowBehaviorHelper(this);
             wh.RepairBehavior();
 
@@ -38,10 +47,6 @@ namespace AccountBook.WPF
 
             // 欢迎标签显示内容
             lblWelcome.Content = service.GetLabelContent();
-
-            // 初始化分类下拉框
-            rdoIn.IsChecked = true;
-            this.InitSortCmb();
 
             // 显示今日合计
             this.GetDayTotal(DateTime.Now);
@@ -54,6 +59,8 @@ namespace AccountBook.WPF
             DateTime dateTo = dateFrom.AddMonths(1).AddDays(-1);
             this.dateFrom.SelectedDate = dateFrom;
             this.dateTo.SelectedDate = dateTo;
+
+            this.dateEdit.SelectedDate = DateTime.Now;
 
             // 获取一览信息
             this.GetListByDay(dateFrom, dateTo, this.txtFilter.Text);
@@ -148,13 +155,17 @@ namespace AccountBook.WPF
         /// </summary>
         private void btnResetData_Click(object sender, RoutedEventArgs e)
         {
-            // 备份数据文件
-            this.MakeBackup();
-            // 删除数据
-            service.DeleteAll();
-            Message.ShowMessage("已成功清空所有数据", shutdownFlg: true);
-            // 回到登录界面
-            AccountBookCommon.ReLogin();
+            Message.ShowConfirmMessage($"确认清空所有数据么？", this);
+            if (this.ConfirmFlg)
+            {
+                // 备份数据文件
+                this.MakeBackup();
+                // 删除数据
+                service.DeleteAll();
+                Message.ShowMessage("已成功清空所有数据", shutdownFlg: true);
+                // 回到登录界面
+                AccountBookCommon.ReLogin();
+            }
         }
 
         /// <summary>
@@ -174,91 +185,6 @@ namespace AccountBook.WPF
         }
 
         /// <summary>
-        /// 切换到收入
-        /// </summary>
-        private void rdoIn_Checked(object sender, RoutedEventArgs e)
-        {
-            this.lblMoney.Content = "收入金额：";
-            this.InitSortCmb(CommConst.IncomeCd);
-        }
-
-        /// <summary>
-        /// 切换到支出
-        /// </summary>
-        private void rdoEx_Checked(object sender, RoutedEventArgs e)
-        {
-            this.lblMoney.Content = "支出金额：";
-            this.InitSortCmb(CommConst.ExpenditureCd);
-        }
-
-        /// <summary>
-        /// 修改分类信息
-        /// </summary>
-        private void btnEditSorts_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            string sortCd = Convert.ToString(cmbSort.SelectedValue);
-            string kind = Convert.ToBoolean(rdoIn.IsChecked) ? CommConst.IncomeCd : CommConst.ExpenditureCd;
-            EditSorts win = new EditSorts(sortCd, kind);
-            win.ShowDialog();
-            // 更新下拉框内容
-            this.InitSortCmb(kind);
-        }
-
-        /// <summary>
-        /// 金额输入框失去焦点
-        /// </summary>
-        private void txtMoney_LostFocus(object sender, RoutedEventArgs e)
-        {
-            decimal money;
-            if (string.IsNullOrEmpty(this.txtMoney.Text.Trim())) return;
-
-            if (decimal.TryParse(this.txtMoney.Text.Trim(), out money))
-            {
-                this.txtMoney.Text = money.ToString("#,0.00");
-            }
-            else
-            {
-                txtMoney.Text = string.Empty;
-                Message.ShowMessage("请勿输入非法字符", errorFlg: true);
-            }
-        }
-
-        /// <summary>
-        /// 金额输入框得到焦点
-        /// </summary>
-        private void txtMoney_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(this.txtMoney.Text.Trim())) return;
-
-            txtMoney.Text = Convert.ToDecimal(txtMoney.Text.Trim()).ToString("0.00");
-        }
-
-        /// <summary>
-        /// 点击保存
-        /// </summary>
-        private void btnSave_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (txtMoney.Text.Trim().Length == 0)
-            {
-                Message.ShowMessage("金额不能为空", errorFlg: true);
-                return;
-            }
-            // 得到分类号
-            string sortCd = cmbSort.SelectedValue.ToString();
-            decimal money = Convert.ToDecimal(txtMoney.Text);
-            if (service.AddAccount(sortCd, money, txtComments.Text))
-            {
-                this.GetDayTotal(DateTime.Now);
-                this.GetMonthTotal(DateTime.Now);
-                Message.ShowMessage("记录添加成功");
-                // 刷新显示
-                this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
-                this.GetDayTotal(DateTime.Now);
-                this.GetMonthTotal(DateTime.Now);
-            }
-        }
-
-        /// <summary>
         /// 一览明细选中事件
         /// </summary>
         private void dataGeneral_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -270,6 +196,7 @@ namespace AccountBook.WPF
                 DateTime date = Convert.ToDateTime(account.DateStr);
                 // 获取详情
                 this.GetListDetail(date);
+                this.GetMonthTotal(date);
                 this.GetDayTotal(date);
             }
         }
@@ -277,28 +204,23 @@ namespace AccountBook.WPF
         /// <summary>
         /// 详细明细选中事件
         /// </summary>
-        private void dataDetail_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Item_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             Account account = this.dataDetail.SelectedItem as Account;
             if (account != null)
             {
-                if (account.SortCd.StartsWith(CommConst.IncomeCd))
+                EditRecord win = new EditRecord(this);
+                win.Init(account);
+                win.ShowDialog();
+
+                if (this.SuccessFlg)
                 {
-                    this.rdoIn.IsChecked = true;
-                    this.rdoIn_Checked(null, null);
+                    this.GetDayTotal(DateTime.Now);
+                    this.GetMonthTotal(DateTime.Now);
+                    Message.ShowMessage("记录修改成功");
+                    // 刷新显示
+                    this.Refresh(account.AccountDate);
                 }
-                else
-                {
-                    this.rdoEx.IsChecked = true;
-                    this.rdoEx_Checked(null, null);
-                }
-                this.cmbSort.SelectedValue = account.SortCd;
-                this.txtMoney.Text = account.MoneyStr.Remove(account.MoneyStr.Length - 1);
-                this.txtComments.Text = account.Comments;
-            }
-            else
-            {
-                this.InitEditArea();
             }
         }
 
@@ -315,6 +237,7 @@ namespace AccountBook.WPF
             }
             this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
         }
+
         /// <summary>
         /// 结束时间发生变化
         /// </summary>
@@ -335,6 +258,66 @@ namespace AccountBook.WPF
         private void txtFilter_TextChanged(object sender, TextChangedEventArgs e)
         {
             this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
+        }
+
+        /// <summary>
+        /// 新增记录
+        /// </summary>
+        private void btnAdd_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            EditRecord win = new EditRecord(this);
+            win.ShowDialog();
+
+            if (this.SuccessFlg)
+            {
+                this.GetDayTotal(DateTime.Now);
+                this.GetMonthTotal(DateTime.Now);
+                Message.ShowMessage("记录添加成功");
+                // 刷新显示
+                this.Refresh(Convert.ToDateTime(this.dateEdit.SelectedDate));
+            }
+        }
+
+        /// <summary>
+        /// 选中所有
+        /// </summary>
+        private void chkAll_Click(object sender, RoutedEventArgs e)
+        {
+            var data = (sender as CheckBox).DataContext as List<Account>;
+            if (data != null && data.Count > 0)
+            {
+                List<Account> list =
+               this.service.GetListDetail(data[0].AccountDate);
+                list.ForEach(account =>
+                {
+                    account.IsChecked = Convert.ToBoolean(this.chkAll.IsChecked);
+                });
+                this.dataDetail.DataContext = list;
+            }
+        }
+
+        /// <summary>
+        /// 删除选中的记录
+        /// </summary>
+        private void btnDel_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!isDoing)
+            {
+                isDoing = true;
+                var delList = (this.dataDetail.DataContext as List<Account>).
+                        Where(account => account.IsChecked == true).ToList();
+                if (delList.Count > 0)
+                {
+                    Message.ShowConfirmMessage($"确认删除这{delList.Count}条数据么？", this);
+                    if (this.ConfirmFlg)
+                    {
+                        this.service.DeleteAccount(delList);
+                        // 刷新显示
+                        this.Refresh((this.dataDetail.DataContext as List<Account>)[0].AccountDate);
+                    }
+                }
+                isDoing = false;
+            }
         }
         #endregion
 
@@ -362,17 +345,6 @@ namespace AccountBook.WPF
         }
 
         /// <summary>
-        /// 初始化分类下拉框
-        /// </summary>
-        private void InitSortCmb(string kind = CommConst.IncomeCd)
-        {
-            cmbSort.ItemsSource = service.GetSorts().Where(x => x.SortCd.StartsWith(kind)).OrderBy(x => x.SortCd);
-            cmbSort.SelectedValuePath = "SortCd";
-            cmbSort.DisplayMemberPath = "SortName";
-            cmbSort.SelectedIndex = 0;
-        }
-
-        /// <summary>
         /// 获取指定日合计
         /// </summary>
         private void GetDayTotal(DateTime date)
@@ -387,7 +359,7 @@ namespace AccountBook.WPF
         private void GetMonthTotal(DateTime date)
         {
             lblMonth.Content =
-               $"{date.Month}月总收入{service.GetMonthTotalIn(date).ToString("#,0.00")}元，总支出{service.GetMonthTotalEx(date).ToString("#,0.00")}元";
+               $"{date.Year}年{date.Month}月总收入{service.GetMonthTotalIn(date).ToString("#,0.00")}元，总支出{service.GetMonthTotalEx(date).ToString("#,0.00")}元";
         }
 
         /// <summary>
@@ -410,14 +382,16 @@ namespace AccountBook.WPF
         }
 
         /// <summary>
-        /// 初始化编辑部
+        /// 刷新显示
         /// </summary>
-        public void InitEditArea()
+        /// <param name="date">明细的指定时间</param>
+        private void Refresh(DateTime date)
         {
-            this.rdoIn.IsChecked = true;
-            this.rdoIn_Checked(null, null);
-            this.txtMoney.Text = string.Empty;
-            this.txtComments.Text = string.Empty;
+            this.chkAll.IsChecked = false;
+            this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
+            this.GetListDetail(date);
+            this.GetDayTotal(DateTime.Now);
+            this.GetMonthTotal(DateTime.Now);
         }
         #endregion
     }

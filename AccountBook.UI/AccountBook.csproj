@@ -111,6 +111,9 @@
     </Compile>
     <Compile Include="WPF\Common\Message.cs" />
     <Compile Include="WPF\Common\WindowBehaviorHelper.cs" />
+    <Compile Include="WPF\EditRecord.xaml.cs">
+      <DependentUpon>EditRecord.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WPF\EditSorts.xaml.cs">
       <DependentUpon>EditSorts.xaml</DependentUpon>
     </Compile>
@@ -122,6 +125,9 @@
     </Compile>
     <Compile Include="WPF\MainSkin.xaml.cs">
       <DependentUpon>MainSkin.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WPF\ConfirmBox.xaml.cs">
+      <DependentUpon>ConfirmBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="WPF\MessageBox.xaml.cs">
       <DependentUpon>MessageBox.xaml</DependentUpon>
@@ -146,6 +152,10 @@
     <Resource Include="WPF\Resource\Font\fontawesome-webfont.ttf" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="WPF\EditRecord.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="WPF\EditSorts.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -159,6 +169,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="WPF\MainSkin.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="WPF\ConfirmBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
