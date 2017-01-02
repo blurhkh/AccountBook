@@ -208,8 +208,8 @@ namespace AccountBook.WPF
             else
             {
                 this.lblTitle.Content = "添加记录";
-                this.lblDate.Content = Convert.ToDateTime(main.dateEdit.SelectedDate).GetDateTimeFormats('D')[3].ToString();
-                if (main.dateEdit.SelectedDate < DateTime.UtcNow)
+                this.lblDate.Content = main.dateEdit.SelectedDate.Value.GetDateTimeFormats('D')[3].ToString();
+                if (main.dateEdit.SelectedDate.Value.ToString("yyyy/MM/dd").CompareTo(DateTime.UtcNow.ToString("yyyy/MM/dd")) < 0)
                 {
                     this.accountDate = main.dateEdit.SelectedDate;
                 }
