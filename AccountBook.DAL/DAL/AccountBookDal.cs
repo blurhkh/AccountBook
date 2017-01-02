@@ -140,6 +140,8 @@ namespace AccountBook.DAL
         public bool EditAccount(Account account)
         {
             account.UpdateDate = Convert.ToDateTime(DateTime.Now.ToString("s"));
+            // 因为一开始删除flg没取出来，所以这边加上
+            account.DeleteFlg = CommConst.NotDeleted;
             dbContext.Entry(account).State = EntityState.Modified;
             account.UpdateDate = DateTime.Now;
             return dbContext.SaveChanges() > 0;
