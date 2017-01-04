@@ -85,7 +85,7 @@ namespace AccountBook.DAL
         /// <param name="sortName">分类</param>
         public bool AddSort(string kind, string sortName)
         {
-            var lastCd = dbContext.Set<Sort>().OrderByDescending(x => x.SortCd).Select(x => x.SortCd).FirstOrDefault();
+            var lastCd = dbContext.Set<Sort>().OrderByDescending(x => x.SortCd.Remove(0, 1)).Select(x => x.SortCd).FirstOrDefault();
             string newCd = (Convert.ToInt32(lastCd.Remove(0, 1)) + 1).ToString().PadLeft(9, '0').Insert(0, kind);
             dbContext.Set<Sort>().Add(new Sort { SortCd = newCd, SortName = sortName });
             return dbContext.SaveChanges() > 0;
