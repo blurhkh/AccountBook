@@ -91,7 +91,7 @@ namespace AccountBook.WPF
         private void btnEditSorts_MouseDown(object sender, MouseButtonEventArgs e)
         {
             string sortCd = Convert.ToString(cmbSort.SelectedValue);
-            string kind = Convert.ToBoolean(rdoIn.IsChecked) ? CommConst.IncomeCd : CommConst.ExpenditureCd;
+            string kind = rdoIn.IsChecked.Value ? CommConst.IncomeCd : CommConst.ExpenditureCd;
             EditSorts win = new EditSorts(sortCd, kind);
             win.ShowDialog();
             // 更新下拉框内容
