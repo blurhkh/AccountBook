@@ -407,7 +407,7 @@ namespace AccountBook.Service
         {
             ((Range)worksheet.Cells[row, 2]).Value = title;
             var sumIn = list.Sum(x => x.Income);
-            var sumEx = list.Sum(x => x.Income);
+            var sumEx = list.Sum(x => x.Expenditure);
             ((Range)worksheet.Cells[row, 3]).Value =
                 sumIn.HasValue ? sumIn.Value.ToString("#,0.00") : string.Empty;
             ((Range)worksheet.Cells[row, 4]).Value =
