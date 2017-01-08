@@ -183,8 +183,8 @@ namespace AccountBook.DAL
         {
             var query = dbContext.Set<Account>()
                 .Where(x => x.DeleteFlg == CommConst.NotDeleted
-                && (dateFrom != null ? x.AccountDate >= dateFrom : true)
-                && (dateTo != null ? x.AccountDate <= dateTo : true))
+                && (dateFrom.HasValue? x.AccountDate >= dateFrom : true)
+                && (dateTo.HasValue ? x.AccountDate <= dateTo : true))
                 .GroupBy(x => new
                 {
                     Year = x.AccountDate.Year,
@@ -232,7 +232,8 @@ namespace AccountBook.DAL
         }
 
         /// <summary>
-        /// 得到每月主要信息
+        /// 得到摘要信息
+        /// </summary>
         public List<Account> GetMainInfo(List<Account> accountList)
         {
             List<DateTime> dateList = accountList.Select(x => x.AccountDate).ToList();
@@ -271,19 +272,17 @@ namespace AccountBook.DAL
         }
 
         /// <summary>
-        /// 得到指定日的收入支出详情
+        /// 得到指定范围的收入支出详情
         /// </summary>
-        /// <param name="date"></param>
         /// <returns></returns>
-        public List<Account> GetListDetial(DateTime date)
+        public List<Account> GetListDetial(DateTime? dateFrom, DateTime? dateTo)
         {
             var query = (from account in dbContext.Set<Account>()
                          join sortJoin in dbContext.Set<Sort>()
                          on account.SortCd equals sortJoin.SortCd into sortTemp
                          from sort in sortTemp.DefaultIfEmpty()
-                         where account.AccountDate.Year == date.Year
-                         && account.AccountDate.Month == date.Month
-                         && account.AccountDate.Day == date.Day
+                         where (dateFrom.HasValue ? account.AccountDate >= dateFrom : true)
+                         && (dateTo.HasValue ? account.AccountDate <= dateTo : true)
                          && account.DeleteFlg == CommConst.NotDeleted
                          select new
                          {
@@ -308,6 +307,18 @@ namespace AccountBook.DAL
                 MoneyStr = Convert.ToDecimal(x.Money).ToString("#,0.00") + "元"
             }));
             return result.OrderBy(x => x.AccountDate).ToList();
+        }
+
+
+        /// <summary>
+        /// 得到指定日的收入支出详情
+        /// </summary>
+        /// <returns></returns>
+        public List<Account> GetListDetial(DateTime date)
+        {
+            DateTime dateFrom = date.Date;
+            DateTime dateTo = dateFrom.AddDays(1).AddSeconds(-1);
+            return this.GetListDetial(dateFrom, dateTo);
         }
 
         /// <summary>

@@ -11,6 +11,7 @@ using AccountBook.Common;
 using static AccountBook.Common.AccountBookCommon;
 using System.Text;
 using System.Collections.Generic;
+using Microsoft.Win32;
 
 namespace AccountBook.WPF
 {
@@ -286,11 +287,10 @@ namespace AccountBook.WPF
             var data = (sender as CheckBox).DataContext as List<Account>;
             if (data != null && data.Count > 0)
             {
-                List<Account> list =
-               this.service.GetListDetail(data[0].AccountDate);
+                List<Account> list = this.service.GetListDetail(data[0].AccountDate);
                 list.ForEach(account =>
                 {
-                    account.IsChecked = Convert.ToBoolean(this.chkAll.IsChecked);
+                    account.IsChecked = this.chkAll.IsChecked.Value;
                 });
                 this.dataDetail.DataContext = list;
             }
@@ -301,9 +301,9 @@ namespace AccountBook.WPF
         /// </summary>
         private void btnDel_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (!isDoing)
+            if (!this.isDoing)
             {
-                isDoing = true;
+                this.isDoing = true;
                 var delList = (this.dataDetail.DataContext as List<Account>).
                         Where(account => account.IsChecked == true).ToList();
                 if (delList.Count > 0)
@@ -316,7 +316,27 @@ namespace AccountBook.WPF
                         this.Refresh((this.dataDetail.DataContext as List<Account>)[0].AccountDate);
                     }
                 }
-                isDoing = false;
+                this.isDoing = false;
+            }
+        }
+
+        /// <summary>
+        /// 导出Excel
+        /// </summary>
+        private void btnExcel_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!this.isDoing)
+            {
+                this.isDoing = true;
+                SaveFileDialog fileDialog = new SaveFileDialog() { Filter = "Excel文件 (*.xlsx)|*.xlsx" };
+                fileDialog.Title = "请选择保存路径";
+                fileDialog.ShowDialog();
+                if (!string.IsNullOrEmpty(fileDialog.FileName))
+                {
+                    this.service.ExcportExcel(fileDialog.FileName,this.cmbExcel.SelectedIndex.ToString(),
+                        this.dateFrom.SelectedDate,this.dateTo.SelectedDate);
+                }
+                this.isDoing = false;
             }
         }
         #endregion
@@ -368,9 +388,17 @@ namespace AccountBook.WPF
         private void GetListByDay(DateTime? dateFrom, DateTime? dateTo, string filter)
         {
             filter = filter.Trim();
-            this.dataGeneral.DataContext =
-                service.GetListByDay(dateFrom, dateTo)
-                .Where(x => string.IsNullOrEmpty(filter) ? true : x.Summary.Contains(filter));
+            var list = service.GetListByDay(dateFrom, dateTo)
+                .Where(x => string.IsNullOrEmpty(filter) ? true : x.Summary.Contains(filter)).ToList();
+            if (list.Count() == 0)
+            {
+                this.grdExcel.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                this.grdExcel.Visibility = Visibility.Visible;
+            }
+            this.dataGeneral.DataContext = list;
         }
 
         /// <summary>

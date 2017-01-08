@@ -27,5 +27,20 @@ namespace AccountBook.Common
         /// 已删除
         /// </summary>
         public const string Deleted = "1";
+
+        /// <summary>
+        /// 按月
+        /// </summary>
+        public const string ByMonth = "0";
+
+        /// <summary>
+        /// 按季度
+        /// </summary>
+        public const string ByQuarter = "1";
+
+        /// <summary>
+        /// 按年
+        /// </summary>
+        public const string ByYear = "2";
     }
 }

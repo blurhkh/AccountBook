@@ -49,7 +49,7 @@
                                     <RowDefinition Height="30"/>
                                     <RowDefinition Height="10"/>
                                     <RowDefinition/>
-                                    <RowDefinition Height="30"/>
+                                    <RowDefinition Height="40"/>
                                 </Grid.RowDefinitions>
                                 <Label Grid.Row="0" Height="30" Content="账簿明细一览"  FontSize="15"
                                         BorderBrush="DarkGray" BorderThickness="0,0,0,1"
@@ -111,9 +111,22 @@
                                         </GridView>
                                     </ListView.View>
                                 </ListView>
+                                <Grid Name="grdExcel" Grid.Row="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition></ColumnDefinition>
+                                        <ColumnDefinition Width="70"></ColumnDefinition>
+                                        <ColumnDefinition Width="60"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox Name="cmbExcel" Grid.Column="1" Height="25"  FontSize="13" VerticalContentAlignment="Center">
+                                        <ComboBoxItem IsSelected="True">按月</ComboBoxItem>
+                                        <ComboBoxItem>按季度</ComboBoxItem>
+                                        <ComboBoxItem>按年</ComboBoxItem>
+                                    </ComboBox>
+                                    <Label Name="btnExcel" Grid.Column="2" HorizontalAlignment="Center" Width="30" Style="{StaticResource FontAwesome}" Content="&#xf1c3;" FontSize="18px" ToolTip="导出为Excel" MouseDown="btnExcel_MouseDown"></Label>
+                                </Grid>
                             </Grid>
                         </Border>
-                        <Grid Name="grdAdd" Grid.Column="1" >
+                        <Grid Grid.Column="1" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="30"/>
                                 <RowDefinition Height="30"/>
