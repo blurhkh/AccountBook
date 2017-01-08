@@ -20,12 +20,13 @@ namespace AccountBook.WPF
     /// </summary>
     public partial class ConfirmBox : Window
     {
-        private Main main;
-        public ConfirmBox(Main main)
+        // 是否确定要进行处理
+        public bool ConfirmFlg { get; set; } = false;
+
+        public ConfirmBox()
         {
             InitializeComponent();
-            this.main = main;
-            main.ConfirmFlg = false;
+
             // 背景初始化
             ImageBrush imageBrush = new ImageBrush();
             imageBrush.Stretch = Stretch.UniformToFill;
@@ -46,7 +47,7 @@ namespace AccountBook.WPF
         /// </summary>
         private void btnConfirm_Click(object sender, RoutedEventArgs e)
         {
-            main.ConfirmFlg = true;
+            this.ConfirmFlg = true;
             this.Close();
         }
 

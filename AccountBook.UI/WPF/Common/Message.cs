@@ -33,12 +33,12 @@ namespace AccountBook.WPF
         /// 显示确认框
         /// </summary>
         /// <param name="message"></param>
-        /// <param name="Owner">当前主窗体</param>
-        public static void ShowConfirmMessage(string message, Main owner)
+        public static bool ShowConfirmMessage(string message)
         {
-            ConfirmBox win = new ConfirmBox(owner);
+            ConfirmBox win = new ConfirmBox();
             win.lblMessage.Content = message;
             win.ShowDialog();
+            return win.ConfirmFlg;
         }
     }
 }

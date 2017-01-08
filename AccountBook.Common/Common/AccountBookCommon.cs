@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Media.Imaging;
+using System.Runtime.InteropServices;
 
 namespace AccountBook.Common
 {
@@ -61,5 +62,14 @@ namespace AccountBook.Common
                 fsWrite.Write(buffer, 0, buffer.Length);
             }
         }
+
+        /// <summary>
+        /// 返回线程标识符
+        /// </summary>
+        /// <param name="hwnd">指定句柄</param>
+        /// <param name="ID">线程的标识符</param>
+        /// <returns></returns>
+        [DllImport("User32.dll", CharSet = CharSet.Auto)]
+        public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
     }
 }

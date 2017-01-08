@@ -2,12 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AccountBook.Model;
 using AccountBook.Common;
 using Microsoft.Office.Interop.Excel;
-using System.Runtime.Remoting.Messaging;
+
 
 namespace AccountBook.Service
 {
@@ -239,21 +237,17 @@ namespace AccountBook.Service
         /// <summary>
         /// 导出Excel
         /// </summary>
-        public void ExcportExcel(string path, string type, DateTime? dateFrom, DateTime? dateTo)
+        public bool ExcportExcel(string path, string type, DateTime? dateFrom, DateTime? dateTo)
         {
+            bool result = true;
+
             // 工作表
             Worksheet worksheet;
             var list = this.dal.GetListDetial(dateFrom, dateTo);
 
             // 创建Excel主程序
-            Application excelApp = CallContext.GetData("excelApp") as Application;
-            if (excelApp == null)
-            {
-                excelApp = new Application();
-                CallContext.SetData("excelApp", excelApp);
-            }
-
-            excelApp.Visible = true;
+            Application excelApp = new Application();
+            excelApp.Visible = false;
             Workbooks workbooks = excelApp.Workbooks;
             // 创建工作簿
             Workbook workbook = workbooks.Add(true);
@@ -270,6 +264,11 @@ namespace AccountBook.Service
 
                     for (int i = 0; i < months.Count(); i++)
                     {
+                        if (i > 0)
+                        {
+                            // 原基础上添加Sheet
+                            workbook.Worksheets.Add(After: workbook.Worksheets[i]);
+                        }
                         worksheet = workbook.Worksheets[i + 1] as Worksheet;
                         worksheet.Name = $"{months[i].Year}年{months[i].Month}月";
                         this.SetExcelTitle(worksheet);
@@ -277,8 +276,8 @@ namespace AccountBook.Service
                                                      && x.AccountDate.Month == months[i].Month).ToList();
                         this.SetExcelContentByDay(worksheet, listByMonth);
 
-                        // 计算合计
-                        int row = worksheet.UsedRange.Rows.Count + 1;
+                        // 计算合计 空一行
+                        int row = worksheet.UsedRange.Rows.Count + 2;
                         this.SetExcelContentTotal(worksheet, listByMonth, "月合计", row);
                         // 格式设置
                         this.FormatExcel(worksheet);
@@ -297,11 +296,32 @@ namespace AccountBook.Service
                     break;
             }
 
+            // 固定标题行
             excelApp.ActiveWindow.SplitRow = 1;
             excelApp.ActiveWindow.FreezePanes = true;
 
             // 保存文件
-         //   workbook.SaveAs(path);
+            try
+            {
+                workbook.SaveAs(path);
+            }
+            catch
+            {
+                result = false;
+            }
+            finally
+            {
+                // 关闭Excel线程
+                workbooks.Close();
+                excelApp.Quit();
+                IntPtr hwnd = new IntPtr(excelApp.Hwnd);
+                int processId = 0;
+                AccountBookCommon.GetWindowThreadProcessId(hwnd, out processId);
+                System.Diagnostics.Process process = System.Diagnostics.Process.GetProcessById(processId);
+                process.Kill();
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -312,8 +332,13 @@ namespace AccountBook.Service
             string[] titles = new string[] { "时间", "分类", "收入（元）", "支出（元）", "备注" };
             for (int i = 0; i < titles.Length; i++)
             {
-                ((Range)worksheet.Cells[1, i + 2]).Value = titles[i];
+                ((Range)worksheet.Cells[1, i + 1]).Value = titles[i];
             }
+
+            // 居中加粗
+            Range range = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, 5]];
+            range.HorizontalAlignment = XlHAlign.xlHAlignLeft;
+            range.Font.Bold = true;
         }
 
         /// <summary>
@@ -324,17 +349,17 @@ namespace AccountBook.Service
         public void SetExcelContent(Worksheet worksheet, int row, Account account)
         {
             // 时间
-            ((Range)worksheet.Cells[row, 2]).Value = account.AccountDate.ToString("yyyy/MM/dd HH:mm:ss");
+            ((Range)worksheet.Cells[row, 1]).Value = account.AccountDate.ToString("yyyy/MM/dd HH:mm:ss");
             // 分类
-            ((Range)worksheet.Cells[row, 3]).Value = account.SortName;
+            ((Range)worksheet.Cells[row, 2]).Value = account.SortName;
             // 收入
-            ((Range)worksheet.Cells[row, 4]).Value = account.Income.HasValue ?
+            ((Range)worksheet.Cells[row, 3]).Value = account.Income.HasValue ?
                 account.Income.Value.ToString("#,0.00") : string.Empty;
             // 支出
-            ((Range)worksheet.Cells[row, 5]).Value = account.Expenditure.HasValue ?
+            ((Range)worksheet.Cells[row, 4]).Value = account.Expenditure.HasValue ?
                 account.Expenditure.Value.ToString("#,0.00") : string.Empty;
             // 备注
-            ((Range)worksheet.Cells[row, 6]).Value = account.Comments;
+            ((Range)worksheet.Cells[row, 5]).Value = account.Comments;
         }
 
         /// <summary>
@@ -342,13 +367,13 @@ namespace AccountBook.Service
         /// </summary>
         public void FormatExcel(Worksheet worksheet)
         {
-            // 金额靠右处理
+            // 靠左处理
             int rowEnd = worksheet.UsedRange.Rows.Count;
-            Range range = worksheet.Range[worksheet.Cells[2, 4], worksheet.Cells[rowEnd, 5]];
-            range.HorizontalAlignment = XlHAlign.xlHAlignRight;
+            Range range = worksheet.Range[worksheet.Cells[2, 1], worksheet.Cells[rowEnd, 5]];
+            range.HorizontalAlignment = XlHAlign.xlHAlignLeft;
 
             // 自动列宽
-            range = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[rowEnd, 6]];
+            range = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[rowEnd, 5]];
             range.Columns.AutoFit();
         }
 
@@ -370,7 +395,7 @@ namespace AccountBook.Service
                 }
 
                 // 计算合计
-                this.SetExcelContentTotal(worksheet, listByday, "日合计", row + listByday.Count());
+                this.SetExcelContentTotal(worksheet, listByday, "日合计", row);
                 row += 2;
             }
         }
@@ -380,12 +405,12 @@ namespace AccountBook.Service
         /// </summary>
         public void SetExcelContentTotal(Worksheet worksheet, List<Account> list, string title, int row)
         {
-            ((Range)worksheet.Cells[row, 3]).Value = title;
+            ((Range)worksheet.Cells[row, 2]).Value = title;
             var sumIn = list.Sum(x => x.Income);
             var sumEx = list.Sum(x => x.Income);
-            ((Range)worksheet.Cells[row, 4]).Value =
+            ((Range)worksheet.Cells[row, 3]).Value =
                 sumIn.HasValue ? sumIn.Value.ToString("#,0.00") : string.Empty;
-            ((Range)worksheet.Cells[row, 5]).Value =
+            ((Range)worksheet.Cells[row, 4]).Value =
                 sumEx.HasValue ? sumEx.Value.ToString("#,0.00") : string.Empty;
         }
     }

@@ -29,8 +29,6 @@ namespace AccountBook.WPF
         #endregion
 
         #region 属性
-        // 是否确定要进行处理
-        public bool ConfirmFlg { get; set; }
         // 表示是否添加或者修改数据成功
         public bool SuccessFlg { get; set; }
         #endregion
@@ -156,8 +154,8 @@ namespace AccountBook.WPF
         /// </summary>
         private void btnResetData_Click(object sender, RoutedEventArgs e)
         {
-            Message.ShowConfirmMessage($"确认清空所有数据么？", this);
-            if (this.ConfirmFlg)
+            bool result = Message.ShowConfirmMessage($"确认清空所有数据么？");
+            if (result)
             {
                 // 备份数据文件
                 this.MakeBackup();
@@ -308,8 +306,8 @@ namespace AccountBook.WPF
                         Where(account => account.IsChecked == true).ToList();
                 if (delList.Count > 0)
                 {
-                    Message.ShowConfirmMessage($"确认删除这{delList.Count}条数据么？", this);
-                    if (this.ConfirmFlg)
+                    bool result = Message.ShowConfirmMessage($"确认删除这{delList.Count}条数据么？");
+                    if (result)
                     {
                         this.service.DeleteAccount(delList);
                         // 刷新显示
@@ -333,8 +331,16 @@ namespace AccountBook.WPF
                 fileDialog.ShowDialog();
                 if (!string.IsNullOrEmpty(fileDialog.FileName))
                 {
-                    this.service.ExcportExcel(fileDialog.FileName,this.cmbExcel.SelectedIndex.ToString(),
-                        this.dateFrom.SelectedDate,this.dateTo.SelectedDate);
+                    bool result = this.service.ExcportExcel(fileDialog.FileName, this.cmbExcel.SelectedIndex.ToString(),
+                         this.dateFrom.SelectedDate, this.dateTo.SelectedDate);
+                    if (result)
+                    {
+                        Message.ShowMessage("导出成功");
+                    }
+                    else
+                    {
+                        Message.ShowMessage("导出失败，请检查文件是否被占用");
+                    }
                 }
                 this.isDoing = false;
             }

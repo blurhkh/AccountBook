@@ -58,8 +58,9 @@ namespace AccountBook
             AccountBookCommon.Log($"Message:{e.Exception.Message}\r\nSource:{e.Exception.Source}\r\nStackTrace:{e.Exception.StackTrace.TrimStart()}");
             e.Handled = true;
             Message.ShowMessage("程序发生异常,请联系开发人员", shutdownFlg: true, errorFlg: true);
-            MessageBoxResult result = System.Windows.MessageBox.Show("重启软件", "请联系开发人员", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+
+            bool result = Message.ShowConfirmMessage("是否重启软件？");
+            if (result)
             {
                 AccountBookCommon.ReLogin();
             }         
