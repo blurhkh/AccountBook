@@ -44,5 +44,10 @@ namespace AccountBook.Model
         /// 是否被选中
         /// </summary>
         public bool IsChecked { get; set; }
+
+        /// <summary>
+        /// 季度
+        /// </summary>
+        public string Quarter { get; set; }
     }
 }

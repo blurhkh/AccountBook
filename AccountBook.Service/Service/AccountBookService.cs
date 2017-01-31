@@ -235,6 +235,18 @@ namespace AccountBook.Service
         }
 
         /// <summary>
+        /// 打开Excel
+        /// </summary>
+        public void OpenExcel(string path)
+        {
+            // 创建Excel主程序
+            Application excelApp = new Application();
+            excelApp.Visible = true;
+            Workbooks workbooks = excelApp.Workbooks;
+            workbooks.Open(path);
+        }
+
+        /// <summary>
         /// 导出Excel
         /// </summary>
         public bool ExcportExcel(string path, string type, DateTime? dateFrom, DateTime? dateTo)
@@ -278,27 +290,79 @@ namespace AccountBook.Service
 
                         // 计算合计 空一行
                         int row = worksheet.UsedRange.Rows.Count + 2;
-                        this.SetExcelContentTotal(worksheet, listByMonth, "月合计", row);
+                        this.SetExcelContentTotal(worksheet, listByMonth, $"{months[i].Year}年{months[i].Month}月合计", row);
+                        row++;
+                        this.SetSurplus(worksheet, row, CommConst.ByMonth, months[i]);
+
                         // 格式设置
-                        this.FormatExcel(worksheet);
+                        this.FormatExcel(worksheet, excelApp);
                     }
                     #endregion
                     break;
                 case CommConst.ByQuarter:
                     #region 按季度导出
+                    list.ForEach(x => x.Quarter = this.GetQuarter(x.AccountDate));
 
+                    var quarters = list.GroupBy(x => x.Quarter).Select(y => y.Key).ToList();
+                    for (int i = 0; i < quarters.Count(); i++)
+                    {
+                        if (i > 0)
+                        {
+                            // 原基础上添加Sheet
+                            workbook.Worksheets.Add(After: workbook.Worksheets[i]);
+                        }
+
+                        worksheet = workbook.Worksheets[i + 1] as Worksheet;
+                        worksheet.Name = quarters[i];
+                        this.SetExcelTitle(worksheet);
+
+                        var listByQuarter = list.Where(x => x.Quarter == quarters[i]).ToList();
+                        this.SetExcelContentByDay(worksheet, listByQuarter, true);
+
+                        // 计算季度合计 空一行
+                        int row = worksheet.UsedRange.Rows.Count + 2;
+                        this.SetExcelContentTotal(worksheet, listByQuarter, $"{quarters[i]}合计", row);
+                        row++;
+
+                        DateTime lastDate = listByQuarter.OrderBy(x => x.AccountDate).Last().AccountDate;
+                        this.SetSurplus(worksheet, row, CommConst.ByQuarter, lastDate);
+
+                        // 格式设置
+                        this.FormatExcel(worksheet, excelApp);
+                    }
                     #endregion
                     break;
                 case CommConst.ByYear:
                     #region 按年导出
+                    var years = list.GroupBy(x => x.AccountDate.Year).Select(y => y.Key).ToList();
 
+                    for (int i = 0; i < years.Count(); i++)
+                    {
+                        if (i > 0)
+                        {
+                            // 原基础上添加Sheet
+                            workbook.Worksheets.Add(After: workbook.Worksheets[i]);
+                        }
+
+                        worksheet = workbook.Worksheets[i + 1] as Worksheet;
+                        worksheet.Name = $"{years[i]}年";
+                        this.SetExcelTitle(worksheet);
+
+                        var listByYear = list.Where(x => x.AccountDate.Year == years[i]).ToList();
+                        this.SetExcelContentByDay(worksheet, listByYear, true);
+
+                        // 计算年合计 空一行
+                        int row = worksheet.UsedRange.Rows.Count + 2;
+                        this.SetExcelContentTotal(worksheet, listByYear, $"{years[i]}年合计", row);
+                        row++;
+                        this.SetSurplus(worksheet, row, CommConst.ByYear, DateTime.Parse($"{years[i].ToString()}/01/01"));
+
+                        // 格式设置
+                        this.FormatExcel(worksheet, excelApp);
+                    }
                     #endregion
                     break;
             }
-
-            // 固定标题行
-            excelApp.ActiveWindow.SplitRow = 1;
-            excelApp.ActiveWindow.FreezePanes = true;
 
             // 保存文件
             try
@@ -335,9 +399,8 @@ namespace AccountBook.Service
                 ((Range)worksheet.Cells[1, i + 1]).Value = titles[i];
             }
 
-            // 居中加粗
+            // 加粗
             Range range = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, 5]];
-            range.HorizontalAlignment = XlHAlign.xlHAlignLeft;
             range.Font.Bold = true;
         }
 
@@ -365,29 +428,33 @@ namespace AccountBook.Service
         /// <summary>
         /// Excel格式设置
         /// </summary>
-        public void FormatExcel(Worksheet worksheet)
+        public void FormatExcel(Worksheet worksheet, Application excelApp)
         {
             // 靠左处理
             int rowEnd = worksheet.UsedRange.Rows.Count;
-            Range range = worksheet.Range[worksheet.Cells[2, 1], worksheet.Cells[rowEnd, 5]];
+            Range range = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[rowEnd, 5]];
             range.HorizontalAlignment = XlHAlign.xlHAlignLeft;
 
             // 自动列宽
             range = worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[rowEnd, 5]];
             range.Columns.AutoFit();
+
+            // 固定标题行
+            excelApp.ActiveWindow.SplitRow = 1;
+            excelApp.ActiveWindow.FreezePanes = true;
         }
 
         /// <summary>
         /// 按天设置Excel明细内容
         /// </summary>
-        public void SetExcelContentByDay(Worksheet worksheet, List<Account> list)
+        public void SetExcelContentByDay(Worksheet worksheet, List<Account> list, bool printMonthTotal = false)
         {
             int row = worksheet.UsedRange.Rows.Count + 1;
             var days = list.GroupBy(x => x.AccountDate.Date)
                 .Select(y => y.Key).ToList();
-            foreach (var day in days)
+            for (int i = 0; i < days.Count(); i++)
             {
-                var listByday = list.Where(x => x.AccountDate.Date == day.Date).ToList();
+                var listByday = list.Where(x => x.AccountDate.Date == days[i].Date).ToList();
                 foreach (var account in listByday)
                 {
                     this.SetExcelContent(worksheet, row, account);
@@ -395,8 +462,19 @@ namespace AccountBook.Service
                 }
 
                 // 计算合计
-                this.SetExcelContentTotal(worksheet, listByday, "日合计", row);
+                this.SetExcelContentTotal(worksheet, listByday, $"{days[i].Year}年{days[i].Month}月{days[i].Day}日合计", row);
                 row += 2;
+
+                // 判断是否打印月合计
+                if (printMonthTotal && (i + 1 == days.Count() || days[i].Month != days[i + 1].Month))
+                {
+                    var listByMonth
+                        = list.Where(x => x.AccountDate.Date.Year == days[i].Year
+                        && x.AccountDate.Month == days[i].Month).ToList();
+
+                    this.SetExcelContentTotal(worksheet, listByMonth, $"{days[i].Year}年{days[i].Month}月合计", row);
+                    row += 2;
+                }
             }
         }
 
@@ -412,6 +490,56 @@ namespace AccountBook.Service
                 sumIn.HasValue ? sumIn.Value.ToString("#,0.00") : string.Empty;
             ((Range)worksheet.Cells[row, 4]).Value =
                 sumEx.HasValue ? sumEx.Value.ToString("#,0.00") : string.Empty;
+        }
+
+        /// <summary>
+        /// 设置剩余额
+        /// </summary>
+        public void SetSurplus(Worksheet worksheet, int row, string type, DateTime date)
+        {
+            string title = string.Empty;
+            switch (type)
+            {
+                case CommConst.ByMonth:
+                    date = date.AddMonths(1).AddSeconds(-1);
+                    title = $"截止{date.Year}年{date.Month}月末余额";
+                    break;
+                case CommConst.ByQuarter:
+                    title = $"截止{this.GetQuarter(date)}末余额";
+                    break;
+                case CommConst.ByYear:
+                    date = date.AddYears(1).AddSeconds(-1);
+                    title = $"截止{date.Year}年末余额";
+                    break;
+            }
+
+            decimal surplus = dal.GetSetSurplus(date);
+
+            ((Range)worksheet.Cells[row, 2]).Value = title;
+            ((Range)worksheet.Cells[row, 3]).Value = surplus.ToString("#,0.00");
+        }
+
+        public string GetQuarter(DateTime date)
+        {
+            string quarter;
+            if (date.Month >= 1 && date.Month <= 3)
+            {
+                quarter = "一";
+            }
+            else if (date.Month >= 4 && date.Month <= 6)
+            {
+                quarter = "二";
+            }
+            else if (date.Month >= 7 && date.Month <= 9)
+            {
+                quarter = "三";
+            }
+            else
+            {
+                quarter = "四";
+            }
+
+            return $"{date.Year}年第{quarter}季度";
         }
     }
 }

@@ -107,7 +107,9 @@ namespace AccountBook.WPF
                 {
                     if ((bool)rdoAdd.IsChecked)
                     {
-                        int count = service.GetSorts().Where(x => x.SortName == txtNewSort.Text).Count();
+                        int count = service.GetSorts()
+                            .Where(x => x.SortCd.StartsWith(this.kind) 
+                             && x.SortName == txtNewSort.Text).Count();
                         if (count > 0)
                         {
                             Message.ShowMessage("请勿添加重复数据", errorFlg: true);

@@ -183,7 +183,7 @@ namespace AccountBook.DAL
         {
             var query = dbContext.Set<Account>()
                 .Where(x => x.DeleteFlg == CommConst.NotDeleted
-                && (dateFrom.HasValue? x.AccountDate >= dateFrom : true)
+                && (dateFrom.HasValue ? x.AccountDate >= dateFrom : true)
                 && (dateTo.HasValue ? x.AccountDate <= dateTo : true))
                 .GroupBy(x => new
                 {
@@ -353,6 +353,19 @@ namespace AccountBook.DAL
                 dbContextTransaction.Commit();
             }
             return count;
+        }
+
+        /// <summary>
+        /// 得到指定时间为止的剩余额
+        /// </summary>
+        public decimal GetSetSurplus(DateTime date)
+        {
+            var query = dbContext.Set<Account>().Where(x => x.AccountDate <= date);
+            decimal? inToatl = query.Sum(x => x.Income);
+            decimal? exTotal = query.Sum(x => x.Expenditure);
+            decimal surplus = (inToatl.HasValue ? inToatl.Value : 0)
+                - (exTotal.HasValue ? exTotal.Value : 0);
+            return surplus;
         }
     }
 }

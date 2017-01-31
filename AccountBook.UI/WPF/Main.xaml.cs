@@ -329,13 +329,21 @@ namespace AccountBook.WPF
                 SaveFileDialog fileDialog = new SaveFileDialog() { Filter = "Excel文件 (*.xlsx)|*.xlsx" };
                 fileDialog.Title = "请选择保存路径";
                 fileDialog.ShowDialog();
-                if (!string.IsNullOrEmpty(fileDialog.FileName))
+                string path = fileDialog.FileName;
+                if (!string.IsNullOrEmpty(path))
                 {
-                    bool result = this.service.ExcportExcel(fileDialog.FileName, this.cmbExcel.SelectedIndex.ToString(),
+                    bool result = this.service.ExcportExcel(path, this.cmbExcel.SelectedIndex.ToString(),
                          this.dateFrom.SelectedDate, this.dateTo.SelectedDate);
                     if (result)
                     {
                         Message.ShowMessage("导出成功");
+
+                        result = Message.ShowConfirmMessage("是否打开Excel文件？");
+
+                        if (result)
+                        {
+                            service.OpenExcel(path);
+                        }
                     }
                     else
                     {
