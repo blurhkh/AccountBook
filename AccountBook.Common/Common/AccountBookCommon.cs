@@ -55,12 +55,7 @@ namespace AccountBook.Common
                 Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}Log");
             }
             string path = $"{AppDomain.CurrentDomain.BaseDirectory}Log\\{DateTime.Now.ToString("yyyyMMddHHmmss")}.log";
-            using (FileStream fsWrite = new FileStream(path, FileMode.Append, FileAccess.Write))
-            {
-                //将字符 串转换成字节数组
-                byte[] buffer = System.Text.Encoding.Default.GetBytes(txt);
-                fsWrite.Write(buffer, 0, buffer.Length);
-            }
+            File.WriteAllText(path, txt);
         }
 
         /// <summary>
