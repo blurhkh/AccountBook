@@ -11,7 +11,8 @@
         WindowStyle="None" 
         AllowsTransparency="True"
         Background="Transparent"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        ShowInTaskbar="False">
     <Grid HorizontalAlignment="Center" Background="Transparent">
         <Border x:Name="skinBrush" BorderBrush="Black" BorderThickness="1" CornerRadius="10" Margin="0">
             <Grid  Width="388" Height="228" >

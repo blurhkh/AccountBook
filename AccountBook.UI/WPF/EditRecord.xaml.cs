@@ -35,9 +35,16 @@ namespace AccountBook.WPF
         private AccountBookService service = new AccountBookService();
         public EditRecord(Main main)
         {
+            // 不显示在任务栏
+            this.ShowInTaskbar = false;
+            
             this.main = main;
             main.SuccessFlg = false;
             InitializeComponent();
+
+            // 设置主窗口的处理必须放在控件初期化的后面
+            this.Owner = main;
+            this.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             // 背景初始化
             ImageBrush imageBrush = new ImageBrush();
@@ -93,6 +100,8 @@ namespace AccountBook.WPF
             string sortCd = Convert.ToString(cmbSort.SelectedValue);
             string kind = rdoIn.IsChecked.Value ? CommConst.IncomeCd : CommConst.ExpenditureCd;
             EditSorts win = new EditSorts(sortCd, kind);
+            win.Owner = this;
+            win.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             win.ShowDialog();
             // 更新下拉框内容
             this.InitSortCmb(kind);
@@ -113,7 +122,7 @@ namespace AccountBook.WPF
             else
             {
                 txtMoney.Text = string.Empty;
-                Message.ShowMessage("请勿输入非法字符", errorFlg: true);
+                Message.ShowMessage("请勿输入非法字符", this, errorFlg: true);
             }
         }
 
@@ -142,7 +151,7 @@ namespace AccountBook.WPF
         {
             if (txtMoney.Text.Trim().Length == 0)
             {
-                Message.ShowMessage("金额不能为空", errorFlg: true);
+                Message.ShowMessage("金额不能为空", this, errorFlg: true);
                 return;
             }
             // 得到分类号

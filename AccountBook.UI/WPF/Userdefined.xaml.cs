@@ -36,6 +36,8 @@ namespace AccountBook.WPF
             // 初始化文本框内容
             lblContent.Text = "点击设置登录时显示的文本内容";
 
+            this.Title = "登录界面设置";
+
             // 显示画面设置
             Display();
 

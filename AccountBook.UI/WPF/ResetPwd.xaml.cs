@@ -31,6 +31,7 @@ namespace AccountBook.WPF
             {
                 lblMessage.Content = service.GetLabelContent();
             }
+            this.Title = lblMessage.Content.ToString();
 
             // 获取程序运行根目录
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
@@ -104,7 +105,7 @@ namespace AccountBook.WPF
                             else
                             {
                                 this.Close();
-                                Message.ShowMessage(message: "密码重置成功，请重新登录", shutdownFlg: true);
+                                Message.ShowMessage("密码重置成功，请重新登录", this, shutdownFlg: true);
                                 // 回到登录界面
                                 ReLogin();
                             }

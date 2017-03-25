@@ -23,6 +23,9 @@ namespace AccountBook.WPF
             // 获取标签显示内容
             lblMessage.Content = service.GetLabelContent();
 
+            // 设置窗口标题
+            this.Title = lblMessage.Content.ToString();
+
             // 获取程序运行根目录
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
 

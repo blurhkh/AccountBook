@@ -47,6 +47,9 @@ namespace AccountBook.WPF
             // 欢迎标签显示内容
             lblWelcome.Content = service.GetLabelContent();
 
+            // 设置窗口标题
+            this.Title = lblWelcome.Content.ToString();
+
             // 显示今日合计
             this.GetDayTotal(DateTime.Now);
 
@@ -54,8 +57,10 @@ namespace AccountBook.WPF
             this.GetMonthTotal(DateTime.Now);
 
             // 初始化日期显示
-            DateTime dateFrom = DateTime.Parse($"{DateTime.Now.Year}/{DateTime.Now.Month}/01");
-            DateTime dateTo = dateFrom.AddMonths(1).AddDays(-1);
+            // 显示最近一个月
+            DateTime today = DateTime.Parse(DateTime.Now.ToString("yyyy/MM/dd"));
+            DateTime dateFrom = today.AddMonths(-1);
+            DateTime dateTo = today.AddDays(1).AddSeconds(-1);
             this.dateFrom.SelectedDate = dateFrom;
             this.dateTo.SelectedDate = dateTo;
 
@@ -137,6 +142,9 @@ namespace AccountBook.WPF
         private void btnResetPwd_Click(object sender, RoutedEventArgs e)
         {
             ResetPwd win = new ResetPwd();
+            win.ShowInTaskbar = false;
+            win.Owner = this;
+            win.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             win.ShowDialog();
         }
 
@@ -146,6 +154,9 @@ namespace AccountBook.WPF
         private void btnResetLogin_Click(object sender, RoutedEventArgs e)
         {
             UserDefined win = new UserDefined();
+            win.ShowInTaskbar = false;
+            win.Owner = this;
+            win.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             win.Show();
         }
 
@@ -154,14 +165,14 @@ namespace AccountBook.WPF
         /// </summary>
         private void btnResetData_Click(object sender, RoutedEventArgs e)
         {
-            bool result = Message.ShowConfirmMessage($"确认清空所有数据么？");
+            bool result = Message.ShowConfirmMessage($"确认清空所有数据么？", this);
             if (result)
             {
                 // 备份数据文件
                 this.MakeBackup();
                 // 删除数据
                 service.DeleteAll();
-                Message.ShowMessage("已成功清空所有数据", shutdownFlg: true);
+                Message.ShowMessage("已成功清空所有数据", this, shutdownFlg: true);
                 // 回到登录界面
                 AccountBookCommon.ReLogin();
             }
@@ -216,7 +227,7 @@ namespace AccountBook.WPF
                 {
                     this.GetDayTotal(DateTime.Now);
                     this.GetMonthTotal(DateTime.Now);
-                    Message.ShowMessage("记录修改成功");
+                    Message.ShowMessage("记录修改成功", this);
                     // 刷新显示
                     this.Refresh(account.AccountDate);
                 }
@@ -231,7 +242,7 @@ namespace AccountBook.WPF
             if (this.dateFrom.SelectedDate != null
                 && this.dateFrom.SelectedDate > this.dateTo.SelectedDate)
             {
-                Message.ShowMessage("开始时间不得大于结束时间", errorFlg: true);
+                Message.ShowMessage("开始时间不得大于结束时间", this, errorFlg: true);
                 this.dateFrom.SelectedDate = this.dateTo.SelectedDate;
             }
             this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
@@ -245,7 +256,7 @@ namespace AccountBook.WPF
             if (this.dateTo.SelectedDate != null
                 && this.dateFrom.SelectedDate > this.dateTo.SelectedDate)
             {
-                Message.ShowMessage("结束时间不得小于开始时间", errorFlg: true);
+                Message.ShowMessage("结束时间不得小于开始时间", this, errorFlg: true);
                 this.dateTo.SelectedDate = this.dateFrom.SelectedDate;
             }
             this.GetListByDay(this.dateFrom.SelectedDate, this.dateTo.SelectedDate, this.txtFilter.Text);
@@ -271,7 +282,7 @@ namespace AccountBook.WPF
             {
                 this.GetDayTotal(DateTime.Now);
                 this.GetMonthTotal(DateTime.Now);
-                Message.ShowMessage("记录添加成功");
+                Message.ShowMessage("记录添加成功", this);
                 // 刷新显示
                 this.Refresh(Convert.ToDateTime(this.dateEdit.SelectedDate));
             }
@@ -306,7 +317,7 @@ namespace AccountBook.WPF
                         Where(account => account.IsChecked == true).ToList();
                 if (delList.Count > 0)
                 {
-                    bool result = Message.ShowConfirmMessage($"确认删除这{delList.Count}条数据么？");
+                    bool result = Message.ShowConfirmMessage($"确认删除这{delList.Count}条数据么？", this);
                     if (result)
                     {
                         this.service.DeleteAccount(delList);
@@ -336,9 +347,9 @@ namespace AccountBook.WPF
                          this.dateFrom.SelectedDate, this.dateTo.SelectedDate);
                     if (result)
                     {
-                        Message.ShowMessage("导出成功");
+                        Message.ShowMessage("导出成功", this);
 
-                        result = Message.ShowConfirmMessage("是否打开Excel文件？");
+                        result = Message.ShowConfirmMessage("是否打开Excel文件？", this);
 
                         if (result)
                         {
@@ -347,7 +358,7 @@ namespace AccountBook.WPF
                     }
                     else
                     {
-                        Message.ShowMessage("导出失败，请检查文件是否被占用");
+                        Message.ShowMessage("导出失败，请检查文件是否被占用", this);
                     }
                 }
                 this.isDoing = false;
@@ -420,6 +431,7 @@ namespace AccountBook.WPF
         /// </summary>
         private void GetListDetail(DateTime date)
         {
+            this.chkAll.IsChecked = false;
             this.dataDetail.DataContext = service.GetListDetail(date);
         }
 

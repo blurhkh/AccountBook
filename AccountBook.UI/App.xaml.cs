@@ -30,7 +30,7 @@ namespace AccountBook
 
             if (!flg)
             {
-                Message.ShowMessage("已有一个程序实例运行");
+                Message.ShowMessage("已有一个程序实例运行", null);
                 // 关闭新打开的实例
                 this.Shutdown();
                 return;
@@ -57,13 +57,13 @@ namespace AccountBook
         {
             AccountBookCommon.Log($"Message:{e.Exception.Message}\r\nSource:{e.Exception.Source}\r\nStackTrace:{e.Exception.StackTrace.TrimStart()}");
             e.Handled = true;
-            Message.ShowMessage("程序发生异常,请联系开发人员", shutdownFlg: true, errorFlg: true);
+            Message.ShowMessage("程序发生异常,请联系开发人员", null, shutdownFlg: true, errorFlg: true);
 
-            bool result = Message.ShowConfirmMessage("是否重启软件？");
+            bool result = Message.ShowConfirmMessage("是否重启软件？", null);
             if (result)
             {
                 AccountBookCommon.ReLogin();
-            }         
+            }
         }
     }
 }

@@ -20,10 +20,12 @@ namespace AccountBook.WPF
         // 获取程序运行根目录
         private string appPath = AppDomain.CurrentDomain.BaseDirectory;
 
-        public MainSkin(Main Owner)
+        public MainSkin(Main owner)
         {
             InitializeComponent();
-            main = Owner;
+            main = owner;
+            this.Owner = owner;
+            this.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             btnSkinConfirm.Visibility = Visibility.Hidden;
             btnSkinCancel.Visibility = Visibility.Hidden;

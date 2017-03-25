@@ -35,6 +35,9 @@ namespace AccountBook.WPF
 
             this.kind = kind;
 
+            // 不显示在任务栏
+            this.ShowInTaskbar = false;
+
             // 背景初始化
             ImageBrush imageBrush = new ImageBrush();
             imageBrush.Stretch = Stretch.UniformToFill;
@@ -94,11 +97,11 @@ namespace AccountBook.WPF
                 if (service.RemoveSort(cmbSort.SelectedValue?.ToString()))
                 {
                     this.Close();
-                    Message.ShowMessage("删除分类成功");
+                    Message.ShowMessage("删除分类成功", this);
                 }
                 else
                 {
-                    Message.ShowMessage("请勿删除已用分类");
+                    Message.ShowMessage("请勿删除已用分类", this);
                 }
             }
             else
@@ -108,18 +111,18 @@ namespace AccountBook.WPF
                     if ((bool)rdoAdd.IsChecked)
                     {
                         int count = service.GetSorts()
-                            .Where(x => x.SortCd.StartsWith(this.kind) 
+                            .Where(x => x.SortCd.StartsWith(this.kind)
                              && x.SortName == txtNewSort.Text).Count();
                         if (count > 0)
                         {
-                            Message.ShowMessage("请勿添加重复数据", errorFlg: true);
+                            Message.ShowMessage("请勿添加重复数据", this, errorFlg: true);
                         }
                         else
                         {
                             if (service.AddSort(this.kind, txtNewSort.Text))
                             {
                                 this.Close();
-                                Message.ShowMessage("分类添加成功");
+                                Message.ShowMessage("分类添加成功", this);
                             }
                         }
                     }
@@ -128,27 +131,27 @@ namespace AccountBook.WPF
                         var record = service.GetSorts().Where(x => x.SortName == txtNewSort.Text).ToList();
                         if (record.Count() > 0 && record[0].SortCd != sortCd)
                         {
-                            Message.ShowMessage("请勿修改为已有分类", errorFlg: true);
+                            Message.ShowMessage("请勿修改为已有分类", this, errorFlg: true);
                         }
 
                         else if (record.Count() > 0 && record[0].SortCd == sortCd)
                         {
                             this.Close();
-                            Message.ShowMessage("并未对所选分类做出任何修改", errorFlg: true);
+                            Message.ShowMessage("并未对所选分类做出任何修改", this, errorFlg: true);
                         }
                         else
                         {
                             if (service.EditSort(this.sortCd, txtNewSort.Text))
                             {
                                 this.Close();
-                                Message.ShowMessage("分类修改成功");
+                                Message.ShowMessage("分类修改成功", this);
                             }
                         }
                     }
                 }
                 else
                 {
-                    Message.ShowMessage("请输入1至10位字符作为分类名", errorFlg: true);
+                    Message.ShowMessage("请输入1至10位字符作为分类名", this, errorFlg: true);
                 }
             }
         }
