@@ -49,7 +49,6 @@ namespace AccountBook.Common
         /// </summary>
         public static void Log(string txt)
         {
-            //使用FileStream来写入数据
             if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}Log"))
             {
                 Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}Log");
